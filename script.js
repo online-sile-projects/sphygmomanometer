@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultDiv = document.getElementById('result');
     const systolicInput = document.getElementById('systolic');
     const diastolicInput = document.getElementById('diastolic');
+    const heartrateInput = document.getElementById('heartrate');
     const historyListDiv = document.getElementById('history-list');
     
     // 載入之前儲存的資料
@@ -18,10 +19,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // 獲取輸入值
         const systolic = parseFloat(systolicInput.value);
         const diastolic = parseFloat(diastolicInput.value);
+        const heartrate = parseFloat(heartrateInput.value);
         
         // 檢查輸入是否有效
         if (isNaN(systolic) || isNaN(diastolic) || systolic <= 0 || diastolic <= 0) {
             resultDiv.innerHTML = '<p class="error">請輸入有效的血壓數值</p>';
+            return;
+        }
+        
+        if (isNaN(heartrate) || heartrate <= 0) {
+            resultDiv.innerHTML = '<p class="error">請輸入有效的心律數值</p>';
             return;
         }
         
@@ -46,6 +53,16 @@ document.addEventListener('DOMContentLoaded', function() {
             categoryClass = 'obese-severe';
         }
         
+        // 確定心律狀況
+        let heartrateStatus = '';
+        if (heartrate < 60) {
+            heartrateStatus = '心律過慢';
+        } else if (heartrate > 100) {
+            heartrateStatus = '心律過快';
+        } else {
+            heartrateStatus = '心律正常';
+        }
+        
         // 產生提醒訊息
         let reminder = '';
         if (category === '低血壓') {
@@ -60,17 +77,24 @@ document.addEventListener('DOMContentLoaded', function() {
             reminder = '身體通常已受影響，較危險。';
         }
         
+        // 根據心律添加額外提醒
+        if (heartrateStatus === '心律過慢') {
+            reminder += ' 心律過慢可能導致疲勞、頭暈，嚴重時可能暈厥。';
+        } else if (heartrateStatus === '心律過快') {
+            reminder += ' 心律過快可能感到心悸、胸悶，或呼吸困難。';
+        }
+        
         // 顯示結果
         resultDiv.innerHTML = `
             <div class="result-content ${categoryClass}">
-                <p class="bmi-result">收縮壓: <strong>${systolic}</strong> mmHg / 舒張壓: <strong>${diastolic}</strong> mmHg</p>
-                <p class="bmi-category">${category}</p>
+                <p class="bmi-result">收縮壓: <strong>${systolic}</strong> mmHg / 舒張壓: <strong>${diastolic}</strong> mmHg / 心律: <strong>${heartrate}</strong> 次/分</p>
+                <p class="bmi-category">${category} (${heartrateStatus})</p>
                 <p class="bmi-reminder">${reminder}</p>
             </div>
         `;
         
         // 將資料儲存到 localStorage
-        saveToLocalStorage(systolic, diastolic, category, categoryClass, reminder);
+        saveToLocalStorage(systolic, diastolic, heartrate, category, heartrateStatus, categoryClass, reminder);
         
         // 如果用戶已經登錄，保存記錄到 Google Sheets
         const userProfile = getCurrentUserProfile();
@@ -83,8 +107,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 await saveBloodPressureRecord(
                     userProfile.userId, 
                     systolicInput.value, 
-                    diastolicInput.value, 
+                    diastolicInput.value,
+                    heartrateInput.value,
                     category,
+                    heartrateStatus,
                     reminder
                 );
                 
@@ -101,11 +127,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 儲存資料到 localStorage
-    function saveToLocalStorage(systolic, diastolic, category, categoryClass, reminder) {
+    function saveToLocalStorage(systolic, diastolic, heartrate, category, heartrateStatus, categoryClass, reminder) {
         const bpData = {
             systolic: systolic,
             diastolic: diastolic,
+            heartrate: heartrate,
             category: category,
+            heartrateStatus: heartrateStatus,
             categoryClass: categoryClass,
             reminder: reminder,
             timestamp: new Date().toISOString()
@@ -124,12 +152,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // 設置表單的值
             systolicInput.value = bpData.systolic;
             diastolicInput.value = bpData.diastolic;
+            if (bpData.heartrate) {
+                heartrateInput.value = bpData.heartrate;
+            }
             
             // 顯示上次測量的結果
             resultDiv.innerHTML = `
                 <div class="result-content ${bpData.categoryClass}">
-                    <p class="bmi-result">收縮壓: <strong>${bpData.systolic}</strong> mmHg / 舒張壓: <strong>${bpData.diastolic}</strong> mmHg</p>
-                    <p class="bmi-category">${bpData.category}</p>
+                    <p class="bmi-result">收縮壓: <strong>${bpData.systolic}</strong> mmHg / 舒張壓: <strong>${bpData.diastolic}</strong> mmHg${bpData.heartrate ? ` / 心律: <strong>${bpData.heartrate}</strong> 次/分` : ''}</p>
+                    <p class="bmi-category">${bpData.category}${bpData.heartrateStatus ? ` (${bpData.heartrateStatus})` : ''}</p>
                     <p class="bmi-reminder">${bpData.reminder}</p>
                     <p class="timestamp">上次測量時間: ${new Date(bpData.timestamp).toLocaleString()}</p>
                 </div>
@@ -154,10 +185,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 保存血壓記錄
-    async function saveBloodPressureRecord(userId, systolic, diastolic, category, reminder) {
+    async function saveBloodPressureRecord(userId, systolic, diastolic, heartrate, category, heartrateStatus, reminder) {
         try {
             const date = new Date().toISOString();
-            const response = await fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+            const response = await fetch(`${GAS_CONFIG.webAppUrl}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -168,7 +199,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     date: date,
                     systolic: systolic,
                     diastolic: diastolic,
+                    heartrate: heartrate,
                     category: category,
+                    heartrateStatus: heartrateStatus,
                     reminder: reminder
                 })
             });
@@ -199,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            const response = await fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=getBloodPressureHistory&userId=${userProfile.userId}`);
+            const response = await fetch(`${GAS_CONFIG.webAppUrl}?action=getBloodPressureHistory&userId=${userProfile.userId}`);
             const result = await response.json();
             
             if (result.success) {
@@ -208,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 historyHTML += '<div class="history-cell">日期</div>';
                 historyHTML += '<div class="history-cell">收縮壓</div>';
                 historyHTML += '<div class="history-cell">舒張壓</div>';
+                historyHTML += '<div class="history-cell">心律</div>';
                 historyHTML += '<div class="history-cell">類別</div>';
                 historyHTML += '</div>';
                 
@@ -218,12 +252,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     const date = new Date(record[0]).toLocaleDateString();
                     const systolic = record[1];
                     const diastolic = record[2];
-                    const category = record[3];
+                    const heartrate = record[3] || '-'; // 兼容舊數據
+                    const category = record[4];
                     
                     historyHTML += '<div class="history-row">';
                     historyHTML += `<div class="history-cell">${date}</div>`;
                     historyHTML += `<div class="history-cell">${systolic}</div>`;
                     historyHTML += `<div class="history-cell">${diastolic}</div>`;
+                    historyHTML += `<div class="history-cell">${heartrate}</div>`;
                     historyHTML += `<div class="history-cell">${category}</div>`;
                     historyHTML += '</div>';
                 });

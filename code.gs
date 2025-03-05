@@ -1,8 +1,8 @@
-// Google Apps Script for BMI Calculator
+// Google Apps Script for Blood Pressure Calculator
 // Deploy this script as a web app to interact with Google Sheets
 
 // Global variables
-const SPREADSHEET_ID = '1TsL2aPDjtf3_GagRO04FqRkZwmnZT6x74gdp_IDckfI'; // Replace with your actual spreadsheet ID
+const SPREADSHEET_ID = '1WSj6AehZjc6mavAIqT7NNKRRqC-lQcJ4a1zbmKnjYvE'; // Replace with your actual spreadsheet ID
 
 // Set up the web app
 function doGet(e) {
@@ -11,10 +11,33 @@ function doGet(e) {
   try {
     if (action === 'saveUser') {
       return saveUser(e);
-    } else if (action === 'saveRecord') {
-      return saveWeightRecord(e);
-    } else if (action === 'getHistory') {
-      return getWeightHistory(e);
+    } else if (action === 'getBloodPressureHistory') {
+      return getBloodPressureHistory(e);
+    } else if (action === 'saveBloodPressure') {
+      return saveBloodPressureRecord(e);
+    } else {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'Invalid action'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Handle POST requests for blood pressure data
+function doPost(e) {
+  try {
+    // Parse the JSON data from the request
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+    
+    if (action === 'saveBloodPressure') {
+      return saveBloodPressureRecordPost(data);
     } else {
       return ContentService.createTextOutput(JSON.stringify({
         success: false,
@@ -77,25 +100,28 @@ function saveUser(e) {
 
 // Create sheet for a specific user
 function createUserSheet(userId, ss) {
-  let userSheet = ss.getSheetByName(userId);
+  let userSheet = ss.getSheetByName(userId + "_bp");
   
   if (!userSheet) {
-    userSheet = ss.insertSheet(userId);
-    userSheet.appendRow(['日期', '體重 (kg)', '身高 (cm)', 'BMI', '類別']);
+    userSheet = ss.insertSheet(userId + "_bp");
+    userSheet.appendRow(['日期', '收縮壓', '舒張壓', '心律', '血壓類別', '心律狀況', '提醒']);
   }
   
   return userSheet;
 }
 
-// Save weight record
-function saveWeightRecord(e) {
+// Save blood pressure record (GET method)
+function saveBloodPressureRecord(e) {
   const userId = e.parameter.userId;
-  const height = e.parameter.height;
-  const weight = e.parameter.weight;
-  const bmi = e.parameter.bmi;
+  const date = e.parameter.date || new Date().toISOString();
+  const systolic = e.parameter.systolic;
+  const diastolic = e.parameter.diastolic;
+  const heartrate = e.parameter.heartrate;
   const category = e.parameter.category;
+  const heartrateStatus = e.parameter.heartrateStatus;
+  const reminder = e.parameter.reminder;
   
-  if (!userId || !height || !weight || !bmi || !category) {
+  if (!userId || !systolic || !diastolic) {
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: 'Missing required parameters'
@@ -105,22 +131,57 @@ function saveWeightRecord(e) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   
   // Get or create user sheet
-  let userSheet = ss.getSheetByName(userId);
+  let userSheet = ss.getSheetByName(userId + "_bp");
   if (!userSheet) {
-    userSheet = createUserSheet(userId, ss);
+    userSheet = ss.insertSheet(userId + "_bp");
+    userSheet.appendRow(['日期', '收縮壓', '舒張壓', '心律', '血壓類別', '心律狀況', '提醒']);
   }
   
-  // Add new weight record
-  const now = new Date().toISOString();
-  userSheet.appendRow([now, weight, height, bmi, category]);
+  // Add new blood pressure record
+  userSheet.appendRow([date, systolic, diastolic, heartrate, category, heartrateStatus, reminder]);
   
   return ContentService.createTextOutput(JSON.stringify({
     success: true
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
-// Get weight history for a user
-function getWeightHistory(e) {
+// Save blood pressure record (POST method)
+function saveBloodPressureRecordPost(data) {
+  const userId = data.userId;
+  const date = data.date || new Date().toISOString();
+  const systolic = data.systolic;
+  const diastolic = data.diastolic;
+  const heartrate = data.heartrate;
+  const category = data.category;
+  const heartrateStatus = data.heartrateStatus;
+  const reminder = data.reminder;
+  
+  if (!userId || !systolic || !diastolic) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: 'Missing required parameters'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  
+  // Get or create user sheet
+  let userSheet = ss.getSheetByName(userId + "_bp");
+  if (!userSheet) {
+    userSheet = ss.insertSheet(userId + "_bp");
+    userSheet.appendRow(['日期', '收縮壓', '舒張壓', '心律', '血壓類別', '心律狀況', '提醒']);
+  }
+  
+  // Add new blood pressure record
+  userSheet.appendRow([date, systolic, diastolic, heartrate, category, heartrateStatus, reminder]);
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    success: true
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Get blood pressure history for a user
+function getBloodPressureHistory(e) {
   const userId = e.parameter.userId;
   
   if (!userId) {
@@ -132,8 +193,8 @@ function getWeightHistory(e) {
   
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   
-  // Get user sheet
-  const userSheet = ss.getSheetByName(userId);
+  // Get user blood pressure sheet
+  const userSheet = ss.getSheetByName(userId + "_bp");
   if (!userSheet) {
     return ContentService.createTextOutput(JSON.stringify({
       success: true,
