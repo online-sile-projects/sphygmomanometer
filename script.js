@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('bmi-form');
+    const form = document.getElementById('blood-pressure-form');
     const resultDiv = document.getElementById('result');
-    const heightInput = document.getElementById('height');
-    const weightInput = document.getElementById('weight');
+    const systolicInput = document.getElementById('systolic');
+    const diastolicInput = document.getElementById('diastolic');
     const historyListDiv = document.getElementById('history-list');
     
     // 載入之前儲存的資料
@@ -16,53 +16,61 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         // 獲取輸入值
-        const height = parseFloat(heightInput.value) / 100; // 轉換成米
-        const weight = parseFloat(weightInput.value);
+        const systolic = parseFloat(systolicInput.value);
+        const diastolic = parseFloat(diastolicInput.value);
         
         // 檢查輸入是否有效
-        if (isNaN(height) || isNaN(weight) || height <= 0 || weight <= 0) {
-            resultDiv.innerHTML = '<p class="error">請輸入有效的身高和體重數值</p>';
+        if (isNaN(systolic) || isNaN(diastolic) || systolic <= 0 || diastolic <= 0) {
+            resultDiv.innerHTML = '<p class="error">請輸入有效的血壓數值</p>';
             return;
         }
         
-        // 計算 BMI
-        const bmi = weight / (height * height);
-        const roundedBmi = bmi.toFixed(2);
-        
-        // 確定 BMI 類別
+        // 確定血壓類別
         let category = '';
         let categoryClass = '';
         
-        if (bmi < 18.5) {
-            category = '體重過輕';
+        if (systolic < 90 || diastolic < 60) {
+            category = '低血壓';
             categoryClass = 'underweight';
-        } else if (bmi < 24) {
-            category = '正常範圍';
+        } else if (systolic >= 90 && systolic <= 120 && diastolic >= 60 && diastolic <= 80) {
+            category = '正常血壓';
             categoryClass = 'normal';
-        } else if (bmi < 27) {
-            category = '過重';
+        } else if ((systolic > 120 && systolic < 130) || diastolic == 80) {
+            category = '血壓偏高';
             categoryClass = 'overweight';
-        } else if (bmi < 30) {
-            category = '輕度肥胖';
+        } else if ((systolic >= 130 && systolic <= 140) || (diastolic > 80 && diastolic <= 90)) {
+            category = '高血壓 (前期)';
             categoryClass = 'obese-mild';
-        } else if (bmi < 35) {
-            category = '中度肥胖';
-            categoryClass = 'obese-moderate';
-        } else {
-            category = '重度肥胖';
+        } else if (systolic > 140 || diastolic > 90) {
+            category = '高血壓 (危險)';
             categoryClass = 'obese-severe';
+        }
+        
+        // 產生提醒訊息
+        let reminder = '';
+        if (category === '低血壓') {
+            reminder = '可能疲倦、暈眩，甚至暈厥。';
+        } else if (category === '正常血壓') {
+            reminder = '很棒，繼續保持。';
+        } else if (category === '血壓偏高') {
+            reminder = '通常沒有症狀，要開始留意。';
+        } else if (category === '高血壓 (前期)') {
+            reminder = '通常沒有症狀。心腦血管疾病需服藥。';
+        } else if (category === '高血壓 (危險)') {
+            reminder = '身體通常已受影響，較危險。';
         }
         
         // 顯示結果
         resultDiv.innerHTML = `
             <div class="result-content ${categoryClass}">
-                <p class="bmi-result">您的 BMI 為: <strong>${roundedBmi}</strong></p>
+                <p class="bmi-result">收縮壓: <strong>${systolic}</strong> mmHg / 舒張壓: <strong>${diastolic}</strong> mmHg</p>
                 <p class="bmi-category">${category}</p>
+                <p class="bmi-reminder">${reminder}</p>
             </div>
         `;
         
         // 將資料儲存到 localStorage
-        saveToLocalStorage(heightInput.value, weightInput.value, roundedBmi, category, categoryClass);
+        saveToLocalStorage(systolic, diastolic, category, categoryClass, reminder);
         
         // 如果用戶已經登錄，保存記錄到 Google Sheets
         const userProfile = getCurrentUserProfile();
@@ -71,58 +79,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 保存用戶資料到主表
                 await saveUserToMasterSheet(userProfile);
                 
-                // 保存體重記錄到用戶專屬表格
-                await saveWeightRecord(
+                // 保存血壓記錄到用戶專屬表格
+                await saveBloodPressureRecord(
                     userProfile.userId, 
-                    heightInput.value, 
-                    weightInput.value, 
-                    roundedBmi, 
-                    category
+                    systolicInput.value, 
+                    diastolicInput.value, 
+                    category,
+                    reminder
                 );
                 
-                // 重新載入體重歷史記錄
-                loadWeightHistory();
+                // 重新載入血壓歷史記錄
+                loadBloodPressureHistory();
             } catch (error) {
                 console.error('Error saving data to Google Sheets:', error);
             }
         } else {
             resultDiv.innerHTML += `
-                <p class="login-prompt">登入 Line 帳號以保存您的 BMI 記錄</p>
+                <p class="login-prompt">登入 Line 帳號以保存您的血壓記錄</p>
             `;
         }
     });
     
     // 儲存資料到 localStorage
-    function saveToLocalStorage(height, weight, bmi, category, categoryClass) {
-        const bmiData = {
-            height: height,
-            weight: weight,
-            bmi: bmi,
+    function saveToLocalStorage(systolic, diastolic, category, categoryClass, reminder) {
+        const bpData = {
+            systolic: systolic,
+            diastolic: diastolic,
             category: category,
             categoryClass: categoryClass,
+            reminder: reminder,
             timestamp: new Date().toISOString()
         };
         
-        localStorage.setItem('bmiData', JSON.stringify(bmiData));
+        localStorage.setItem('bpData', JSON.stringify(bpData));
     }
     
     // 從 localStorage 讀取資料
     function loadFromLocalStorage() {
-        const savedData = localStorage.getItem('bmiData');
+        const savedData = localStorage.getItem('bpData');
         
         if (savedData) {
-            const bmiData = JSON.parse(savedData);
+            const bpData = JSON.parse(savedData);
             
             // 設置表單的值
-            heightInput.value = bmiData.height;
-            weightInput.value = bmiData.weight;
+            systolicInput.value = bpData.systolic;
+            diastolicInput.value = bpData.diastolic;
             
-            // 顯示上次計算的結果
+            // 顯示上次測量的結果
             resultDiv.innerHTML = `
-                <div class="result-content ${bmiData.categoryClass}">
-                    <p class="bmi-result">您的 BMI 為: <strong>${bmiData.bmi}</strong></p>
-                    <p class="bmi-category">${bmiData.category}</p>
-                    <p class="timestamp">上次計算時間: ${new Date(bmiData.timestamp).toLocaleString()}</p>
+                <div class="result-content ${bpData.categoryClass}">
+                    <p class="bmi-result">收縮壓: <strong>${bpData.systolic}</strong> mmHg / 舒張壓: <strong>${bpData.diastolic}</strong> mmHg</p>
+                    <p class="bmi-category">${bpData.category}</p>
+                    <p class="bmi-reminder">${bpData.reminder}</p>
+                    <p class="timestamp">上次測量時間: ${new Date(bpData.timestamp).toLocaleString()}</p>
                 </div>
             `;
         }
@@ -144,19 +153,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 保存體重記錄
-    async function saveWeightRecord(userId, height, weight, bmi, category) {
+    // 保存血壓記錄
+    async function saveBloodPressureRecord(userId, systolic, diastolic, category, reminder) {
         try {
-            const response = await fetch(`${GAS_CONFIG.webAppUrl}?action=saveRecord&userId=${encodeURIComponent(userId)}&height=${encodeURIComponent(height)}&weight=${encodeURIComponent(weight)}&bmi=${encodeURIComponent(bmi)}&category=${encodeURIComponent(category)}`, {
-                method: 'GET',
-                mode: 'cors'
+            const date = new Date().toISOString();
+            const response = await fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'saveBloodPressure',
+                    userId: userId,
+                    date: date,
+                    systolic: systolic,
+                    diastolic: diastolic,
+                    category: category,
+                    reminder: reminder
+                })
             });
             
-            const result = await response.json();
-            return result.success;
+            return await response.json();
         } catch (error) {
-            console.error('Error saving weight record:', error);
-            return false;
+            console.error('Error saving blood pressure record:', error);
+            throw error;
         }
     }
     
@@ -164,34 +184,30 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkLoginAndLoadHistory() {
         const userProfile = getCurrentUserProfile();
         if (userProfile) {
-            loadWeightHistory();
+            loadBloodPressureHistory();
         } else {
-            historyListDiv.innerHTML = '<p>請先登入以查看您的體重記錄</p>';
+            historyListDiv.innerHTML = '<p>請先登入以查看您的血壓記錄</p>';
         }
     }
     
-    // 載入體重歷史記錄
-    async function loadWeightHistory() {
+    // 載入血壓歷史記錄
+    async function loadBloodPressureHistory() {
         const userProfile = getCurrentUserProfile();
         if (!userProfile) {
-            historyListDiv.innerHTML = '<p>請先登入以查看您的體重記錄</p>';
+            historyListDiv.innerHTML = '<p>請先登入以查看您的血壓記錄</p>';
             return;
         }
         
         try {
-            const response = await fetch(`${GAS_CONFIG.webAppUrl}?action=getHistory&userId=${encodeURIComponent(userProfile.userId)}`, {
-                method: 'GET',
-                mode: 'cors'
-            });
-            
+            const response = await fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=getBloodPressureHistory&userId=${userProfile.userId}`);
             const result = await response.json();
             
-            if (result.success && result.data && result.data.length > 0) {
-                let historyHTML = '<div class="history-table">';
+            if (result.success) {
+                let historyHTML = '<div class="history-container">';
                 historyHTML += '<div class="history-header">';
                 historyHTML += '<div class="history-cell">日期</div>';
-                historyHTML += '<div class="history-cell">體重 (kg)</div>';
-                historyHTML += '<div class="history-cell">BMI</div>';
+                historyHTML += '<div class="history-cell">收縮壓</div>';
+                historyHTML += '<div class="history-cell">舒張壓</div>';
                 historyHTML += '<div class="history-cell">類別</div>';
                 historyHTML += '</div>';
                 
@@ -200,14 +216,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 recentHistory.forEach(record => {
                     const date = new Date(record[0]).toLocaleDateString();
-                    const weight = record[1];
-                    const bmi = record[3];
-                    const category = record[4];
+                    const systolic = record[1];
+                    const diastolic = record[2];
+                    const category = record[3];
                     
                     historyHTML += '<div class="history-row">';
                     historyHTML += `<div class="history-cell">${date}</div>`;
-                    historyHTML += `<div class="history-cell">${weight}</div>`;
-                    historyHTML += `<div class="history-cell">${bmi}</div>`;
+                    historyHTML += `<div class="history-cell">${systolic}</div>`;
+                    historyHTML += `<div class="history-cell">${diastolic}</div>`;
                     historyHTML += `<div class="history-cell">${category}</div>`;
                     historyHTML += '</div>';
                 });
@@ -215,11 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 historyHTML += '</div>';
                 historyListDiv.innerHTML = historyHTML;
             } else {
-                historyListDiv.innerHTML = '<p>暫無體重記錄</p>';
+                historyListDiv.innerHTML = '<p>無法載入血壓記錄</p>';
             }
         } catch (error) {
-            console.error('Error loading weight history:', error);
-            historyListDiv.innerHTML = '<p>載入體重記錄失敗</p>';
+            console.error('Error loading blood pressure history:', error);
+            historyListDiv.innerHTML = '<p>載入血壓記錄時發生錯誤</p>';
         }
     }
     
@@ -227,9 +243,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('lineLoginStatusChanged', function() {
         const userProfile = getCurrentUserProfile();
         if (userProfile) {
-            loadWeightHistory();
+            loadBloodPressureHistory();
         } else {
-            historyListDiv.innerHTML = '<p>請先登入以查看您的體重記錄</p>';
+            historyListDiv.innerHTML = '<p>請先登入以查看您的血壓記錄</p>';
         }
     });
 });

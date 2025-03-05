@@ -29,7 +29,7 @@ header {
     align-items: center;
     margin-bottom: 30px;
     padding: 16px;
-    background-color: #4CAF50;
+    background-color: #3498db; /* 更改為藍色主題，表示血壓監測 */
     color: white;
     border-radius: 8px;
 }
@@ -42,8 +42,9 @@ h1 {
 
 h2 {
     font-size: 18px;
-    margin: 20px 0 12px;
-    color: #2c3e50;
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 15px;
 }
 
 /* 用戶資料樣式 */
@@ -85,55 +86,61 @@ h2 {
     margin: 0;
 }
 
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid #fff;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
 /* 登入區域樣式 */
 .login-section {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     text-align: center;
 }
 
 .login-btn {
-    padding: 12px 24px;
-    background-color: #06C755;
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #00c300;
     color: white;
     border: none;
     border-radius: 5px;
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 .login-btn:hover {
-    background-color: #05A847;
+    background-color: #009900;
 }
 
 #login-status {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #666;
-}
-
-.login-prompt {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-left: 4px solid #06C755;
+    margin-top: 8px;
     font-size: 14px;
     color: #555;
 }
 
-/* SEO友好的介紹區塊樣式 */
+.login-prompt {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #3498db;
+    text-align: center;
+}
+
+/* 簡介部分樣式 */
 .intro-section {
     background-color: white;
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 30px;
-    line-height: 1.7;
 }
 
 .intro-section h2 {
@@ -143,16 +150,15 @@ h2 {
 }
 
 .intro-section p {
-    color: #555;
     margin-bottom: 15px;
-    font-size: 16px;
+    color: #555;
 }
 
 .intro-section p:last-child {
     margin-bottom: 0;
 }
 
-/* 計算區域樣式 */
+/* 計算器部分樣式 */
 .calculator-section {
     background-color: white;
     padding: 25px;
@@ -183,7 +189,7 @@ input[type="number"] {
     -webkit-appearance: none; /* 移除iOS預設樣式 */
 }
 
-.calculate-btn {
+.calculate-btn, .monitor-btn {
     width: 100%;
     padding: 12px 24px;
     background-color: #3498db;
@@ -197,31 +203,21 @@ input[type="number"] {
     margin-top: 8px;
 }
 
-.calculate-btn:hover {
+.calculate-btn:hover, .monitor-btn:hover {
     background-color: #2980b9;
 }
 
-/* 結果區域樣式 */
+/* 結果顯示樣式 */
 .result-box {
-    margin-top: 25px;
-    padding: 15px;
-    background-color: #e8f5e9;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 18px;
-    min-height: 60px;
-}
-
-.result-box.visible {
-    display: block !important; /* 使用 !important 確保顯示 */
-    opacity: 1;
-    transition: opacity 0.3s ease-in;
+    margin-top: 20px;
+    padding: 15px 0;
 }
 
 .result-content {
-    padding: 15px;
     border-radius: 8px;
+    padding: 20px;
     text-align: center;
+    margin-bottom: 20px;
 }
 
 .result-content.underweight {
@@ -231,7 +227,7 @@ input[type="number"] {
 
 .result-content.normal {
     background-color: #A9DFBF;
-    border: 2px solid #2ecc71;
+    border: 2px solid #27ae60;
 }
 
 .result-content.overweight {
@@ -249,14 +245,21 @@ input[type="number"] {
     border: 2px solid #e74c3c;
 }
 
-.bmi-result {
+.bmi-result, .bp-result {
     font-size: 20px;
     margin-bottom: 10px;
 }
 
-.bmi-category {
+.bmi-category, .bp-category {
     font-size: 18px;
     font-weight: 700;
+}
+
+.bmi-reminder {
+    font-size: 16px;
+    margin-top: 10px;
+    font-style: italic;
+    color: #555;
 }
 
 .error {
@@ -297,15 +300,15 @@ input[type="number"] {
     font-size: 14px;
 }
 
-/* BMI分類顏色 */
-.underweight { background-color: #AED6F1; }
-.normal { background-color: #A9DFBF; }
-.overweight { background-color: #FAD7A0; }
-.obese-mild { background-color: #F5B041; }
-.obese-moderate { background-color: #F8C471; }
-.obese-severe { background-color: #F1948A; }
+/* 血壓分類顏色 */
+.underweight { background-color: #AED6F1; } /* 低血壓 - 淺藍色 */
+.normal { background-color: #A9DFBF; } /* 正常 - 淺綠色 */
+.overweight { background-color: #FAD7A0; } /* 偏高 - 淺黃色 */
+.obese-mild { background-color: #F5B041; } /* 高血壓前期 - 橙色 */
+.obese-moderate { background-color: #F8C471; } /* 高血壓一期 - 深橙色 */
+.obese-severe { background-color: #F1948A; } /* 高血壓危險 - 紅色 */
 
-/* 腰圍參考樣式 */
+/* 血壓參考樣式 */
 .waist-reference {
     display: flex;
     flex-wrap: wrap;
@@ -319,21 +322,30 @@ input[type="number"] {
     padding: 12px;
     border-radius: 8px;
     text-align: center;
+    background-color: #EBF5FB;
+    border: 1px solid #3498db;
 }
-
-.male { background-color: #D6EAF8; }
-.female { background-color: #F8E0E6; }
 
 .gender {
     font-weight: 700;
     margin-bottom: 5px;
+    color: #2c3e50;
 }
 
 .waist-value {
     font-size: 14px;
+    color: #34495e;
 }
 
-/* 體重歷史記錄樣式 */
+.male {
+    background-color: #D6EAF8;
+}
+
+.female {
+    background-color: #D6EAF8;
+}
+
+/* 歷史記錄樣式 */
 .weight-history {
     background-color: white;
     padding: 25px;
@@ -342,22 +354,27 @@ input[type="number"] {
     margin-bottom: 30px;
 }
 
-.history-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
+.history-container {
+    border: 1px solid #e5e5e5;
+    border-radius: 5px;
+    overflow: hidden;
 }
 
 .history-header {
     display: flex;
-    font-weight: bold;
-    background-color: #f2f2f2;
-    border-bottom: 2px solid #ddd;
+    background-color: #3498db;
+    color: white;
+    font-weight: 500;
+    border-bottom: 1px solid #ddd;
 }
 
 .history-row {
     display: flex;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #eee;
+}
+
+.history-row:last-child {
+    border-bottom: none;
 }
 
 .history-row:nth-child(even) {

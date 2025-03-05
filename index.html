@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMI 計算器 - 免費在線體重指數計算工具</title>
+    <title>血壓監測器 - 免費在線血壓監測工具</title>
     <!-- SEO Meta Tags -->
-    <meta name="description" content="免費在線BMI計算器，立即計算您的體重指數，了解您的健康狀況。提供BMI標準參考表、腰圍參考和體重記錄功能。">
-    <meta name="keywords" content="BMI計算器, 體重指數, 健康檢測, 體重管理, 腰圍參考, 肥胖指標, 減肥">
+    <meta name="description" content="免費在線血壓監測器，立即監測您的血壓，了解您的健康狀況。提供血壓標準參考表、血壓記錄功能。">
+    <meta name="keywords" content="血壓監測器, 血壓, 健康檢測, 血壓管理, 血壓參考, 高血壓, 低血壓">
     <!-- Open Graph / Social Media Meta Tags -->
-    <meta property="og:title" content="BMI 計算器 - 免費在線體重指數計算工具">
-    <meta property="og:description" content="免費在線BMI計算器，立即計算您的體重指數，了解您的健康狀況。">
+    <meta property="og:title" content="血壓監測器 - 免費在線血壓監測工具">
+    <meta property="og:description" content="免費在線血壓監測器，立即監測您的血壓，了解您的健康狀況。">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://keepbmi.com/">
-    <meta property="og:image" content="https://keepbmi.com/images/bmi-calculator-preview.jpg">
+    <meta property="og:image" content="https://keepbmi.com/images/blood-pressure-monitor-preview.jpg">
     <!-- Canonical URL -->
     <link rel="canonical" href="https://keepbmi.com/">
     <!-- Existing CSS and Font links -->
@@ -27,8 +27,8 @@
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "BMI 計算器",
-        "description": "免費在線BMI計算器，立即計算您的體重指數，了解您的健康狀況。",
+        "name": "血壓監測器",
+        "description": "免費在線血壓監測器，立即監測您的血壓，了解您的健康狀況。",
         "url": "https://keepbmi.com/",
         "applicationCategory": "HealthApplication",
         "offers": {
@@ -42,7 +42,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>BMI 計算器</h1>
+            <h1>血壓監測器</h1>
             <div class="user-profile" id="user-profile">
                 <!-- User profile will be displayed here after login -->
             </div>
@@ -55,84 +55,84 @@
         
         <!-- SEO-friendly introductory content -->
         <section class="intro-section">
-            <h2>什麼是BMI指數？</h2>
-            <p>BMI（Body Mass Index）是身體質量指數，是用體重公斤數除以身高米數平方得出的數值，用於評估人體胖瘦程度。通過BMI值，您可以判斷自己是否處於健康體重範圍內，並採取相應措施維護健康。</p>
-            <p>本工具可幫助您快速計算BMI值，並提供專業的健康參考標準。立即使用下方計算器，了解您的健康狀況！</p>
+            <h2>什麼是血壓？</h2>
+            <p>血壓是指血液在血管內流動時對血管壁產生的壓力。血壓的測量值包括收縮壓和舒張壓，分別代表心臟收縮和舒張時的壓力。通過血壓值，您可以判斷自己是否處於健康血壓範圍內，並採取相應措施維護健康。</p>
+            <p>本工具可幫助您快速監測血壓值，並提供專業的健康參考標準。立即使用下方監測器，了解您的健康狀況！</p>
         </section>
         
         <section class="calculator-section">
-            <h2>BMI 計算工具</h2>
-            <form id="bmi-form">
+            <h2>血壓監測工具</h2>
+            <form id="blood-pressure-form">
                 <div class="input-group">
-                    <label for="height">身高 (cm)</label>
-                    <input type="number" id="height" name="height" step="0.01" required placeholder="請輸入身高">
+                    <label for="systolic">收縮壓 (mmHg)</label>
+                    <input type="number" id="systolic" name="systolic" step="1" required placeholder="請輸入收縮壓">
                 </div>
                 
                 <div class="input-group">
-                    <label for="weight">體重 (kg)</label>
-                    <input type="number" id="weight" name="weight" step="0.01" required placeholder="請輸入體重">
+                    <label for="diastolic">舒張壓 (mmHg)</label>
+                    <input type="number" id="diastolic" name="diastolic" step="1" required placeholder="請輸入舒張壓">
                 </div>
                 
-                <button type="submit" class="calculate-btn">計算 BMI</button>
+                <button type="submit" class="monitor-btn">監測血壓</button>
             </form>
             
             <div id="result" class="result-box"></div>
         </section>
         
-        <section class="reference-section" id="bmi-reference">
-            <h2>BMI 參考表</h2>
+        <section class="reference-section" id="blood-pressure-reference">
+            <h2>血壓參考表</h2>
             <div class="reference-table">
                 <div class="reference-item underweight">
-                    <div class="bmi-category">體重過輕</div>
-                    <div class="bmi-range">BMI < 18.5</div>
+                    <div class="bmi-category">低血壓</div>
+                    <div class="bmi-range">收縮壓 < 90 或 舒張壓 < 60</div>
                 </div>
                 <div class="reference-item normal">
                     <div class="bmi-category">正常範圍</div>
-                    <div class="bmi-range">18.5 ~ 24</div>
+                    <div class="bmi-range">收縮壓 90 ~ 120 或 舒張壓 60 ~ 80</div>
                 </div>
                 <div class="reference-item overweight">
-                    <div class="bmi-category">過重</div>
-                    <div class="bmi-range">24 ~ 27</div>
+                    <div class="bmi-category">高血壓前期</div>
+                    <div class="bmi-range">收縮壓 120 ~ 140 或 舒張壓 80 ~ 90</div>
                 </div>
                 <div class="reference-item obese-mild">
-                    <div class="bmi-category">輕度肥胖</div>
-                    <div class="bmi-range">27 ~ 30</div>
+                    <div class="bmi-category">高血壓一期</div>
+                    <div class="bmi-range">收縮壓 140 ~ 160 或 舒張壓 90 ~ 100</div>
                 </div>
                 <div class="reference-item obese-moderate">
-                    <div class="bmi-category">中度肥胖</div>
-                    <div class="bmi-range">30 ~ 35</div>
+                    <div class="bmi-category">高血壓二期</div>
+                    <div class="bmi-range">收縮壓 160 ~ 180 或 舒張壓 100 ~ 110</div>
                 </div>
                 <div class="reference-item obese-severe">
-                    <div class="bmi-category">重度肥胖</div>
-                    <div class="bmi-range">BMI ≧ 35</div>
+                    <div class="bmi-category">高血壓三期</div>
+                    <div class="bmi-range">收縮壓 ≧ 180 或 舒張壓 ≧ 110</div>
                 </div>
             </div>
             
-            <h2>腰圍參考</h2>
+            <h2>血壓參考</h2>
             <div class="waist-reference">
                 <div class="waist-item male">
-                    <div class="gender">男性</div>
-                    <div class="waist-value">≧ 90 公分</div>
+                    <div class="gender">收縮壓</div>
+                    <div class="waist-value">前面那個血壓數值</div>
                 </div>
                 <div class="waist-item female">
-                    <div class="gender">女性</div>
-                    <div class="waist-value">≧ 80 公分</div>
+                    <div class="gender">舒張壓</div>
+                    <div class="waist-value">後面那個血壓數值</div>
                 </div>
             </div>
         </section>
         
         <section class="weight-history" id="weight-history">
-            <h2>體重記錄</h2>
+            <h2>血壓記錄</h2>
             <div id="history-list"></div>
         </section>
         
         <!-- SEO-friendly footer content with important keywords -->
         <footer class="site-footer">
             <div class="footer-content">
-                <h3>關於 BMI 計算器</h3>
-                <p>本 BMI 計算器工具完全免費，幫助您監測體重健康狀況。BMI只是健康的一個指標，若有任何健康問題，請諮詢專業醫師。</p>
-                <p>體重管理是健康生活的重要部分。定期監測您的 BMI 可以幫助您維持理想體重，預防肥胖相關疾病，如心臟病、糖尿病和高血壓。</p>
-                <p>© 2023 BMI 計算器 - 保留所有權利</p>
+                <h3>關於血壓監測器</h3>
+                <p>本血壓監測工具完全免費，幫助您監測血壓健康狀況。血壓只是健康的一個指標，若有任何健康問題，請諮詢專業醫師。</p>
+                <p>血壓管理是健康生活的重要部分。定期監測您的血壓可以幫助您維持理想血壓，預防心血管疾病，如心臟病、腦中風和高血壓。</p>
+                <p>© 2023 血壓監測器 - 保留所有權利</p>
             </div>
         </footer>
     </div>
