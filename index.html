@@ -11,10 +11,10 @@
     <meta property="og:title" content="血壓監測器 - 免費在線血壓監測工具">
     <meta property="og:description" content="免費在線血壓監測器，立即監測您的血壓，了解您的健康狀況。">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://keepbmi.com/">
-    <meta property="og:image" content="https://keepbmi.com/images/blood-pressure-monitor-preview.jpg">
+    <meta property="og:url" content="https://phygmomanometer.com/">
+    <meta property="og:image" content="https://phygmomanometer.com/images/icon.svg">
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://keepbmi.com/">
+    <link rel="canonical" href="https://phygmomanometer.com/">
     <!-- Existing CSS and Font links -->
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +29,7 @@
         "@type": "WebApplication",
         "name": "血壓監測器",
         "description": "免費在線血壓監測器，立即監測您的血壓，了解您的健康狀況。",
-        "url": "https://keepbmi.com/",
+        "url": "https://phygmomanometer.com/",
         "applicationCategory": "HealthApplication",
         "offers": {
             "@type": "Offer",
@@ -87,50 +87,50 @@
         <section class="reference-section" id="blood-pressure-reference">
             <h2>血壓參考表</h2>
             <div class="reference-table">
-                <div class="reference-item underweight">
-                    <div class="bmi-category">低血壓</div>
-                    <div class="bmi-range">收縮壓 < 90 或 舒張壓 < 60</div>
+                <div class="reference-item bp-low">
+                    <div class="bp-category">低血壓</div>
+                    <div class="bp-range">收縮壓 < 90 或 舒張壓 < 60</div>
                 </div>
-                <div class="reference-item normal">
-                    <div class="bmi-category">正常範圍</div>
-                    <div class="bmi-range">收縮壓 90 ~ 120 或 舒張壓 60 ~ 80</div>
+                <div class="reference-item bp-normal">
+                    <div class="bp-category">正常範圍</div>
+                    <div class="bp-range">收縮壓 90 ~ 120 或 舒張壓 60 ~ 80</div>
                 </div>
-                <div class="reference-item overweight">
-                    <div class="bmi-category">高血壓前期</div>
-                    <div class="bmi-range">收縮壓 120 ~ 140 或 舒張壓 80 ~ 90</div>
+                <div class="reference-item bp-elevated">
+                    <div class="bp-category">高血壓前期</div>
+                    <div class="bp-range">收縮壓 120 ~ 140 或 舒張壓 80 ~ 90</div>
                 </div>
-                <div class="reference-item obese-mild">
-                    <div class="bmi-category">高血壓一期</div>
-                    <div class="bmi-range">收縮壓 140 ~ 160 或 舒張壓 90 ~ 100</div>
+                <div class="reference-item bp-high-1">
+                    <div class="bp-category">高血壓一期</div>
+                    <div class="bp-range">收縮壓 140 ~ 160 或 舒張壓 90 ~ 100</div>
                 </div>
-                <div class="reference-item obese-moderate">
-                    <div class="bmi-category">高血壓二期</div>
-                    <div class="bmi-range">收縮壓 160 ~ 180 或 舒張壓 100 ~ 110</div>
+                <div class="reference-item bp-high-2">
+                    <div class="bp-category">高血壓二期</div>
+                    <div class="bp-range">收縮壓 160 ~ 180 或 舒張壓 100 ~ 110</div>
                 </div>
-                <div class="reference-item obese-severe">
-                    <div class="bmi-category">高血壓三期</div>
-                    <div class="bmi-range">收縮壓 ≧ 180 或 舒張壓 ≧ 110</div>
+                <div class="reference-item bp-high-3">
+                    <div class="bp-category">高血壓三期</div>
+                    <div class="bp-range">收縮壓 ≧ 180 或 舒張壓 ≧ 110</div>
                 </div>
             </div>
             
             <h2>血壓參考</h2>
-            <div class="waist-reference">
-                <div class="waist-item male">
-                    <div class="gender">收縮壓</div>
-                    <div class="waist-value">前面那個血壓數值</div>
+            <div class="bp-reference">
+                <div class="bp-item systolic">
+                    <div class="bp-label">收縮壓</div>
+                    <div class="bp-value">前面那個血壓數值</div>
                 </div>
-                <div class="waist-item female">
-                    <div class="gender">舒張壓</div>
-                    <div class="waist-value">後面那個血壓數值</div>
+                <div class="bp-item diastolic">
+                    <div class="bp-label">舒張壓</div>
+                    <div class="bp-value">後面那個血壓數值</div>
                 </div>
-                <div class="waist-item heart">
-                    <div class="gender">心律</div>
-                    <div class="waist-value">正常範圍60-100次/分</div>
+                <div class="bp-item heart-rate">
+                    <div class="bp-label">心律</div>
+                    <div class="bp-value">正常範圍60-100次/分</div>
                 </div>
             </div>
         </section>
         
-        <section class="weight-history" id="weight-history">
+        <section class="bp-history" id="bp-history">
             <h2>血壓記錄</h2>
             <div id="history-list"></div>
         </section>
