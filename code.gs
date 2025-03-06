@@ -6,20 +6,25 @@ const SPREADSHEET_ID = '1WSj6AehZjc6mavAIqT7NNKRRqC-lQcJ4a1zbmKnjYvE'; // Replac
 
 // Set up the web app for GET requests
 function doGet(e) {
+  Logger.log('doGet called with parameters: ' + JSON.stringify(e.parameter));
   const action = e.parameter.action;
   
   try {
     if (action === 'saveUser') {
+      Logger.log('Executing saveUser action');
       return saveUser(e);
     } else if (action === 'getBloodPressureHistory') {
+      Logger.log('Executing getBloodPressureHistory action');
       return getBloodPressureHistory(e);
     } else {
+      Logger.log('Invalid action requested: ' + action);
       return ContentService.createTextOutput(JSON.stringify({
         success: false,
         error: 'Invalid action'
       })).setMimeType(ContentService.MimeType.JSON);
     }
   } catch (error) {
+    Logger.log('Error in doGet: ' + error.toString());
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: error.toString()
@@ -29,19 +34,24 @@ function doGet(e) {
 
 // Handle POST requests
 function doPost(e) {
+  Logger.log('doPost called');
   try {
     const data = JSON.parse(e.postData.contents);
+    Logger.log('POST data received: ' + JSON.stringify(data));
     const action = data.action;
     
     if (action === 'saveBloodPressure') {
+      Logger.log('Executing saveBloodPressure action');
       return saveBloodPressureRecord(data);
     } else {
+      Logger.log('Invalid POST action: ' + action);
       return ContentService.createTextOutput(JSON.stringify({
         success: false,
         error: 'Invalid action'
       })).setMimeType(ContentService.MimeType.JSON);
     }
   } catch (error) {
+    Logger.log('Error in doPost: ' + error.toString());
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: error.toString()
@@ -55,7 +65,10 @@ function saveUser(e) {
   const displayName = e.parameter.displayName;
   const pictureUrl = e.parameter.pictureUrl;
   
+  Logger.log('saveUser called with userId: ' + userId + ', displayName: ' + displayName);
+  
   if (!userId || !displayName) {
+    Logger.log('Missing required parameters in saveUser');
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: 'Missing required parameters'
@@ -67,6 +80,7 @@ function saveUser(e) {
   // Check if master sheet exists, if not create it
   let masterSheet = ss.getSheetByName('MasterSheet');
   if (!masterSheet) {
+    Logger.log('Creating new MasterSheet');
     masterSheet = ss.insertSheet('MasterSheet');
     masterSheet.appendRow(['userId', 'displayName', 'pictureUrl', 'createdAt']);
   }
@@ -78,12 +92,14 @@ function saveUser(e) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === userId) {
       userExists = true;
+      Logger.log('User already exists in MasterSheet');
       break;
     }
   }
   
   if (!userExists) {
     const now = new Date().toISOString();
+    Logger.log('Adding new user to MasterSheet');
     masterSheet.appendRow([userId, displayName, pictureUrl, now]);
     
     // Create a sheet for this user
@@ -97,11 +113,15 @@ function saveUser(e) {
 
 // Create sheet for a specific user
 function createUserSheet(userId, ss) {
+  Logger.log('Creating user sheet for userId: ' + userId);
   let userSheet = ss.getSheetByName(userId);
   
   if (!userSheet) {
     userSheet = ss.insertSheet(userId);
-    userSheet.appendRow(['日期', '收縮壓 (mmHg)', '舒張壓 (mmHg)', '心律 (次/分)', '類別', '心律狀況', '提醒']);
+    userSheet.appendRow(['日期', '收縮壓 (mmHg)', '舒張壓 (mmHg)', '心律 (次/分)']);
+    Logger.log('New user sheet created');
+  } else {
+    Logger.log('User sheet already exists');
   }
   
   return userSheet;
@@ -115,97 +135,45 @@ function saveBloodPressureRecord(data) {
   const diastolic = data.diastolic;
   const heartrate = data.heartrate;
   
+  Logger.log('Saving blood pressure record for user: ' + userId + 
+             ', systolic: ' + systolic + 
+             ', diastolic: ' + diastolic + 
+             ', heartrate: ' + heartrate);
+  
   if (!userId || !systolic || !diastolic || !heartrate) {
+    Logger.log('Missing required parameters in saveBloodPressureRecord');
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: 'Missing required parameters'
     })).setMimeType(ContentService.MimeType.JSON);
   }
   
-  // Calculate category, heartrateStatus and reminder based on the values
-  const category = calculateBloodPressureCategory(systolic, diastolic);
-  const heartrateStatus = calculateHeartrateStatus(heartrate);
-  const reminder = generateReminder(category, heartrateStatus);
-  
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   
   // Get or create user sheet
   let userSheet = ss.getSheetByName(userId);
   if (!userSheet) {
+    Logger.log('User sheet not found, creating new one');
     userSheet = createUserSheet(userId, ss);
   }
   
   // Add new blood pressure record
-  userSheet.appendRow([date, systolic, diastolic, heartrate, category, heartrateStatus, reminder]);
+  Logger.log('Appending blood pressure record to user sheet');
+  userSheet.appendRow([date, systolic, diastolic, heartrate]);
   
   return ContentService.createTextOutput(JSON.stringify({
     success: true
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
-// Calculate blood pressure category
-function calculateBloodPressureCategory(systolic, diastolic) {
-  systolic = parseFloat(systolic);
-  diastolic = parseFloat(diastolic);
-  
-  if (systolic < 90 || diastolic < 60) {
-    return '低血壓';
-  } else if (systolic >= 90 && systolic <= 120 && diastolic >= 60 && diastolic <= 80) {
-    return '正常血壓';
-  } else if ((systolic > 120 && systolic < 130) || diastolic == 80) {
-    return '血壓偏高';
-  } else if ((systolic >= 130 && systolic <= 140) || (diastolic > 80 && diastolic <= 90)) {
-    return '高血壓 (前期)';
-  } else if (systolic > 140 || diastolic > 90) {
-    return '高血壓 (危險)';
-  }
-  return '未知';
-}
-
-// Calculate heartrate status
-function calculateHeartrateStatus(heartrate) {
-  heartrate = parseFloat(heartrate);
-  
-  if (heartrate < 60) {
-    return '心律過慢';
-  } else if (heartrate > 100) {
-    return '心律過快';
-  } else {
-    return '心律正常';
-  }
-}
-
-// Generate reminder message
-function generateReminder(category, heartrateStatus) {
-  let reminder = '';
-  
-  if (category === '低血壓') {
-    reminder = '可能疲倦、暈眩，甚至暈厥。';
-  } else if (category === '正常血壓') {
-    reminder = '很棒，繼續保持。';
-  } else if (category === '血壓偏高') {
-    reminder = '通常沒有症狀，要開始留意。';
-  } else if (category === '高血壓 (前期)') {
-    reminder = '通常沒有症狀。心腦血管疾病需服藥。';
-  } else if (category === '高血壓 (危險)') {
-    reminder = '身體通常已受影響，較危險。';
-  }
-  
-  // 根據心律添加額外提醒
-  if (heartrateStatus === '心律過慢') {
-    reminder += ' 心律過慢可能導致疲勞、頭暈，嚴重時可能暈厥。';
-  } else if (heartrateStatus === '心律過快') {
-    reminder += ' 心律過快可能感到心悸、胸悶，或呼吸困難。';
-  }
-  
-  return reminder;
-}
-
 // Get blood pressure history for a user
 function getBloodPressureHistory(e) {
   const userId = e.parameter.userId;
   
+  Logger.log('Getting blood pressure history for user: ' + userId);
+  
   if (!userId) {
+    Logger.log('Missing userId parameter in getBloodPressureHistory');
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: 'Missing userId parameter'
@@ -217,6 +185,7 @@ function getBloodPressureHistory(e) {
   // Get user sheet
   const userSheet = ss.getSheetByName(userId);
   if (!userSheet) {
+    Logger.log('User sheet not found, returning empty data');
     return ContentService.createTextOutput(JSON.stringify({
       success: true,
       data: []
@@ -228,6 +197,7 @@ function getBloodPressureHistory(e) {
   
   // Remove header row
   const records = data.slice(1);
+  Logger.log('Retrieved ' + records.length + ' blood pressure records');
   
   // Sort records by date (newest first)
   records.sort((a, b) => new Date(b[0]) - new Date(a[0]));
@@ -236,4 +206,41 @@ function getBloodPressureHistory(e) {
     success: true,
     data: records
   })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Test function for saveBloodPressureRecord
+function testSaveBloodPressureRecord() {
+  // Create test data
+  const testData = {
+    userId: "testUser123",
+    date: new Date().toISOString(),
+    systolic: 120,
+    diastolic: 80,
+    heartrate: 72
+  };
+  
+  Logger.log('Running test for saveBloodPressureRecord with data: ' + JSON.stringify(testData));
+  
+  // Call the function to save the record
+  const result = saveBloodPressureRecord(testData);
+  
+  // Parse the result
+  const resultJson = JSON.parse(result.getContent());
+  
+  // Verify the operation was successful
+  Logger.log('Test result: ' + (resultJson.success ? 'PASSED' : 'FAILED'));
+  
+  // Check if the data was actually saved
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const userSheet = ss.getSheetByName(testData.userId);
+  
+  if (userSheet) {
+    const data = userSheet.getDataRange().getValues();
+    Logger.log('Sheet data after test: ' + JSON.stringify(data));
+    Logger.log('Total rows after test: ' + data.length);
+  } else {
+    Logger.log('User sheet not found after test - something went wrong');
+  }
+  
+  return resultJson.success;
 }
