@@ -35,33 +35,6 @@ function doGet(e) {
   }
 }
 
-// Handle POST requests
-function doPost(e) {
-  Logger.log('doPost called');
-  try {
-    const data = JSON.parse(e.postData.contents);
-    Logger.log('POST data received: ' + JSON.stringify(data));
-    const action = data.action;
-    
-    if (action === 'saveBloodPressure') {
-      Logger.log('Executing saveBloodPressure action');
-      return testSaveBloodPressureRecord()
-      // return saveBloodPressureRecord(data);
-    } else {
-      Logger.log('Invalid POST action: ' + action);
-      return ContentService.createTextOutput(JSON.stringify({
-        success: false,
-        error: 'Invalid action'
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
-  } catch (error) {
-    Logger.log('Error in doPost: ' + error.toString());
-    return ContentService.createTextOutput(JSON.stringify({
-      success: false,
-      error: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
 
 // Save user to master sheet
 function saveUser(e) {
@@ -294,43 +267,6 @@ function testDoGetSaveBloodPressureRecord() {
                 (matchesDiastolic ? 'Diastolic matches, ' : 'Diastolic doesn\'t match, ') +
                 (matchesHeartrate ? 'Heartrate matches' : 'Heartrate doesn\'t match'));
     }
-  } else {
-    Logger.log('User sheet not found after test - something went wrong');
-  }
-  
-  return resultJson.success;
-}
-
-// Test function for saveBloodPressureRecord
-function testSaveBloodPressureRecord() {
-  // Create test data
-  const testData = {
-    userId: "testUser123",
-    date: new Date().toISOString(),
-    systolic: 120,
-    diastolic: 80,
-    heartrate: 72
-  };
-  
-  Logger.log('Running test for saveBloodPressureRecord with data: ' + JSON.stringify(testData));
-  
-  // Call the function to save the record
-  const result = saveBloodPressureRecord(testData);
-  
-  // Parse the result
-  const resultJson = JSON.parse(result.getContent());
-  
-  // Verify the operation was successful
-  Logger.log('Test result: ' + (resultJson.success ? 'PASSED' : 'FAILED'));
-  
-  // Check if the data was actually saved
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const userSheet = ss.getSheetByName(testData.userId);
-  
-  if (userSheet) {
-    const data = userSheet.getDataRange().getValues();
-    Logger.log('Sheet data after test: ' + JSON.stringify(data));
-    Logger.log('Total rows after test: ' + data.length);
   } else {
     Logger.log('User sheet not found after test - something went wrong');
   }

@@ -185,25 +185,16 @@ document.addEventListener('DOMContentLoaded', function() {
     async function saveBloodPressureRecord(userId, systolic, diastolic, heartrate) {
         try {
             const date = new Date().toISOString();
-            const response = await fetch(`${GAS_CONFIG.webAppUrl}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'saveBloodPressure',
-                    userId: userId,
-                    date: date,
-                    systolic: systolic,
-                    diastolic: diastolic,
-                    heartrate: heartrate
-                })
+            const response = await fetch(`${GAS_CONFIG.webAppUrl}?action=saveBloodPressure&userId=${encodeURIComponent(userId)}&date=${encodeURIComponent(date)}&systolic=${encodeURIComponent(systolic)}&diastolic=${encodeURIComponent(diastolic)}&heartrate=${encodeURIComponent(heartrate)}`, {
+                method: 'GET',
+                mode: 'cors'
             });
             
-            return await response.json();
+            const result = await response.json();
+            return result.success;
         } catch (error) {
             console.error('Error saving blood pressure record:', error);
-            throw error;
+            return false;
         }
     }
     
