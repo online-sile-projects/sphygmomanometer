@@ -1,10 +1,10 @@
 // Line LIFF configuration
 const LINE_CONFIG = {
-    liffId: '2007000134-GP4d2O7e',  // Replace with your LIFF ID from Line Developer Console
-    channelId: '2007000134', // Replace with your Line Channel ID
+    liffId: '2007007936-YegvQE39',  // Replace with your LIFF ID from Line Developer Console
+    channelId: '2007007936', // Replace with your Line Channel ID
 };
 
 // Google Apps Script configuration
 const GAS_CONFIG = {
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbxRLw_vE304MZ8DNM8oo200El2JnfIqCZOYeHQ1-tLTHLU17pWbHFuw9_N9dJj0QAU/exec'
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbxK7ZZcEchzq-Oz_sPU9o4a9szrGJd7Fdlq3I6yIAwJW61YOHlPhf1kPi2ArK2oWBN2/exec'
 };

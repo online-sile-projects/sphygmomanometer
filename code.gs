@@ -45,7 +45,8 @@ function doPost(e) {
     
     if (action === 'saveBloodPressure') {
       Logger.log('Executing saveBloodPressure action');
-      return saveBloodPressureRecord(data);
+      return testSaveBloodPressureRecord()
+      // return saveBloodPressureRecord(data);
     } else {
       Logger.log('Invalid POST action: ' + action);
       return ContentService.createTextOutput(JSON.stringify({
