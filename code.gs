@@ -16,6 +16,9 @@ function doGet(e) {
     } else if (action === 'getBloodPressureHistory') {
       Logger.log('Executing getBloodPressureHistory action');
       return getBloodPressureHistory(e);
+    } else if (action === 'saveBloodPressure') {
+      Logger.log('Executing saveBloodPressure action via GET');
+      return saveBloodPressureRecordFromGet(e);
     } else {
       Logger.log('Invalid action requested: ' + action);
       return ContentService.createTextOutput(JSON.stringify({
@@ -166,6 +169,40 @@ function saveBloodPressureRecord(data) {
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
+// Save blood pressure record from GET request parameters
+function saveBloodPressureRecordFromGet(e) {
+  const userId = e.parameter.userId;
+  const date = e.parameter.date || new Date().toISOString();
+  const systolic = parseInt(e.parameter.systolic);
+  const diastolic = parseInt(e.parameter.diastolic);
+  const heartrate = parseInt(e.parameter.heartrate);
+  
+  Logger.log('Saving blood pressure record from GET for user: ' + userId + 
+             ', systolic: ' + systolic + 
+             ', diastolic: ' + diastolic + 
+             ', heartrate: ' + heartrate);
+  
+  if (!userId || !systolic || !diastolic || !heartrate) {
+    Logger.log('Missing required parameters in saveBloodPressureRecordFromGet');
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: 'Missing required parameters'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  // Create data object with the format expected by saveBloodPressureRecord
+  const data = {
+    userId: userId,
+    date: date,
+    systolic: systolic,
+    diastolic: diastolic,
+    heartrate: heartrate
+  };
+  
+  // Use the existing save function
+  return saveBloodPressureRecord(data);
+}
+
 // Get blood pressure history for a user
 function getBloodPressureHistory(e) {
   const userId = e.parameter.userId;
@@ -206,6 +243,61 @@ function getBloodPressureHistory(e) {
     success: true,
     data: records
   })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Test function for doGet to saveBloodPressureRecord
+function testDoGetSaveBloodPressureRecord() {
+  // Create a mock event object that simulates a GET request
+  const mockEvent = {
+    parameter: {
+      action: 'saveBloodPressure',
+      userId: 'testUserDoGet123',
+      date: new Date().toISOString(),
+      systolic: 130,
+      diastolic: 85,
+      heartrate: 75
+    }
+  };
+  
+  Logger.log('Running test for doGet with saveBloodPressure action');
+  Logger.log('Test parameters: ' + JSON.stringify(mockEvent.parameter));
+  
+  // Call the doGet function with our mock event
+  const result = doGet(mockEvent);
+  
+  // Parse the result
+  const resultJson = JSON.parse(result.getContent());
+  
+  // Verify the operation result
+  Logger.log('Test result: ' + JSON.stringify(resultJson));
+  Logger.log('Test status: ' + (resultJson.success ? 'PASSED' : 'FAILED'));
+  
+  // Check if the data was actually saved
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const userSheet = ss.getSheetByName(mockEvent.parameter.userId);
+  
+  if (userSheet) {
+    const data = userSheet.getDataRange().getValues();
+    Logger.log('Sheet data after test: ' + JSON.stringify(data));
+    Logger.log('Total rows after test: ' + data.length);
+    
+    // Check if the latest entry contains our test data
+    if (data.length > 1) {
+      const lastRow = data[data.length - 1];
+      const matchesSystolic = lastRow[1] == mockEvent.parameter.systolic;
+      const matchesDiastolic = lastRow[2] == mockEvent.parameter.diastolic;
+      const matchesHeartrate = lastRow[3] == mockEvent.parameter.heartrate;
+      
+      Logger.log('Data verification: ' + 
+                (matchesSystolic ? 'Systolic matches, ' : 'Systolic doesn\'t match, ') +
+                (matchesDiastolic ? 'Diastolic matches, ' : 'Diastolic doesn\'t match, ') +
+                (matchesHeartrate ? 'Heartrate matches' : 'Heartrate doesn\'t match'));
+    }
+  } else {
+    Logger.log('User sheet not found after test - something went wrong');
+  }
+  
+  return resultJson.success;
 }
 
 // Test function for saveBloodPressureRecord
