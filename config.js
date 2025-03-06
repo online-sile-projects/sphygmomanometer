@@ -6,5 +6,5 @@ const LINE_CONFIG = {
 
 // Google Apps Script configuration
 const GAS_CONFIG = {
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbx4Lw3Y96kOudVow_IM9KZR5OCoX4-YXJCejbSYqWpXqipRkdnZpli0PsZIIGoXT-xc/exec', // Replace with your deployed GAS Web App URL
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbwD_SRAZkgABif8r5Z_1IkBiVslEF0HvjWSVU6dUE5cNVwJhJIDHudrviPuwdZh8uLe/exec', // Replace with your deployed GAS Web App URL
 };

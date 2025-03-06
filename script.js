@@ -108,10 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     userProfile.userId, 
                     systolicInput.value, 
                     diastolicInput.value,
-                    heartrateInput.value,
-                    category,
-                    heartrateStatus,
-                    reminder
+                    heartrateInput.value
                 );
                 
                 // 重新載入血壓歷史記錄
@@ -185,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 保存血壓記錄
-    async function saveBloodPressureRecord(userId, systolic, diastolic, heartrate, category, heartrateStatus, reminder) {
+    async function saveBloodPressureRecord(userId, systolic, diastolic, heartrate) {
         try {
             const date = new Date().toISOString();
             const response = await fetch(`${GAS_CONFIG.webAppUrl}`, {
@@ -199,10 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     date: date,
                     systolic: systolic,
                     diastolic: diastolic,
-                    heartrate: heartrate,
-                    category: category,
-                    heartrateStatus: heartrateStatus,
-                    reminder: reminder
+                    heartrate: heartrate
                 })
             });
             
