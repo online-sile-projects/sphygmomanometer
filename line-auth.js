@@ -6,6 +6,13 @@
 // Global user profile object
 let lineUserProfile = null;
 
+// Local storage keys
+const STORAGE_KEY = {
+    ACCESS_TOKEN: 'line_access_token',
+    USER_PROFILE: 'line_user_profile',
+    EXPIRES_AT: 'line_token_expires_at'
+};
+
 // Initialize Line SDK
 document.addEventListener('DOMContentLoaded', () => {
     initializeLineLogin();
@@ -18,10 +25,19 @@ async function initializeLineLogin() {
         await liff.init({ liffId: LINE_CONFIG.liffId });
         document.getElementById('login-status').textContent = 'Line SDK 初始化成功';
         
-        // Check if user is logged in
-        if (liff.isLoggedIn()) {
+        // First check if we have stored credentials
+        if (restoreLoginState()) {
+            document.getElementById('login-status').textContent = '已從存儲恢復登入';
+            displayUserProfile();
+            document.getElementById('line-login-btn').textContent = '登出';
+            // 觸發登錄狀態改變事件
+            triggerLoginStatusChanged();
+        }
+        // Then check if user is already logged in with LIFF
+        else if (liff.isLoggedIn()) {
             document.getElementById('login-status').textContent = '已登入';
             await fetchUserProfile();
+            saveLoginState();
             displayUserProfile();
             document.getElementById('line-login-btn').textContent = '登出';
             // 觸發登錄狀態改變事件
@@ -39,10 +55,11 @@ async function initializeLineLogin() {
 function setupLoginButton() {
     const loginButton = document.getElementById('line-login-btn');
     loginButton.addEventListener('click', async () => {
-        if (liff.isLoggedIn()) {
+        if (liff.isLoggedIn() || lineUserProfile) {
             // Logout
             liff.logout();
             lineUserProfile = null;
+            clearLoginState();
             document.getElementById('user-profile').innerHTML = '';
             document.getElementById('login-status').textContent = '已登出';
             loginButton.textContent = '使用 Line 登入';
@@ -55,6 +72,7 @@ function setupLoginButton() {
                 await liff.login();
                 // 登入成功後，獲取資料並觸發事件
                 await fetchUserProfile();
+                saveLoginState();
                 displayUserProfile();
                 loginButton.textContent = '登出';
                 document.getElementById('login-status').textContent = '已登入';
@@ -67,6 +85,63 @@ function setupLoginButton() {
             }
         }
     });
+}
+
+// Save login state to local storage
+function saveLoginState() {
+    if (!lineUserProfile) return;
+    
+    try {
+        // Get access token
+        const accessToken = liff.getAccessToken();
+        if (accessToken) {
+            // Set expiration time (default to 30 days if not specified by LINE)
+            const expiresIn = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+            const expiresAt = Date.now() + expiresIn;
+            
+            // Save to local storage
+            localStorage.setItem(STORAGE_KEY.ACCESS_TOKEN, accessToken);
+            localStorage.setItem(STORAGE_KEY.USER_PROFILE, JSON.stringify(lineUserProfile));
+            localStorage.setItem(STORAGE_KEY.EXPIRES_AT, expiresAt.toString());
+            
+            console.log('Login state saved to local storage');
+        }
+    } catch (error) {
+        console.error('Error saving login state:', error);
+    }
+}
+
+// Restore login state from local storage
+function restoreLoginState() {
+    try {
+        const accessToken = localStorage.getItem(STORAGE_KEY.ACCESS_TOKEN);
+        const userProfileJson = localStorage.getItem(STORAGE_KEY.USER_PROFILE);
+        const expiresAt = parseInt(localStorage.getItem(STORAGE_KEY.EXPIRES_AT) || '0', 10);
+        
+        // Check if token has expired
+        if (Date.now() > expiresAt) {
+            console.log('Stored token has expired');
+            clearLoginState();
+            return false;
+        }
+        
+        if (accessToken && userProfileJson) {
+            lineUserProfile = JSON.parse(userProfileJson);
+            return true;
+        }
+    } catch (error) {
+        console.error('Error restoring login state:', error);
+    }
+    
+    return false;
+}
+
+// Clear login state from local storage
+function clearLoginState() {
+    localStorage.removeItem(STORAGE_KEY.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEY.USER_PROFILE);
+    localStorage.removeItem(STORAGE_KEY.EXPIRES_AT);
+    console.log('Login state cleared from local storage');
 }
 
 // Fetch user profile from Line
