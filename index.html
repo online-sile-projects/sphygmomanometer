@@ -21,7 +21,12 @@
      <link rel="apple-touch-icon" sizes="180x180" href="images/hypertension-apple-touch-icon.png">
      <link rel="icon" type="image/png" sizes="32x32" href="images/hypertension-favicon-32x32.png">
      <link rel="icon" type="image/png" sizes="16x16" href="images/hypertension-favicon-16x16.png">
-     <link rel="manifest" href="site.webmanifest"> 
+     <link rel="manifest" href="site.webmanifest">
+     <!-- PWA Meta Tags -->
+     <meta name="theme-color" content="#ffffff">
+     <meta name="apple-mobile-web-app-capable" content="yes">
+     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+     <meta name="apple-mobile-web-app-title" content="血壓監測器">
     <!-- Existing CSS and Font links -->
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -155,5 +160,19 @@
     <script src="config.js"></script>
     <script src="line-auth.js"></script>
     <script src="script.js"></script>
+    <script>
+        // 註冊 Service Worker 以支援 PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker 註冊成功:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker 註冊失敗:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
