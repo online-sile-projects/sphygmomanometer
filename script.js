@@ -38,19 +38,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (systolic < 90 || diastolic < 60) {
             category = '低血壓';
-            categoryClass = 'underweight';
+            categoryClass = 'bp-low';
         } else if (systolic >= 90 && systolic <= 120 && diastolic >= 60 && diastolic <= 80) {
             category = '正常血壓';
-            categoryClass = 'normal';
+            categoryClass = 'bp-normal';
         } else if ((systolic > 120 && systolic < 130) || diastolic == 80) {
             category = '血壓偏高';
-            categoryClass = 'overweight';
+            categoryClass = 'bp-elevated';
         } else if ((systolic >= 130 && systolic <= 140) || (diastolic > 80 && diastolic <= 90)) {
             category = '高血壓 (前期)';
-            categoryClass = 'obese-mild';
+            categoryClass = 'bp-high-1';
         } else if (systolic > 140 || diastolic > 90) {
             category = '高血壓 (危險)';
-            categoryClass = 'obese-severe';
+            categoryClass = 'bp-high-3';
         }
         
         // 確定心律狀況
@@ -87,9 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 顯示結果
         resultDiv.innerHTML = `
             <div class="result-content ${categoryClass}">
-                <p class="bmi-result">收縮壓: <strong>${systolic}</strong> mmHg / 舒張壓: <strong>${diastolic}</strong> mmHg / 心律: <strong>${heartrate}</strong> 次/分</p>
-                <p class="bmi-category">${category} (${heartrateStatus})</p>
-                <p class="bmi-reminder">${reminder}</p>
+                <p class="bp-result">收縮壓: <strong>${systolic}</strong> mmHg / 舒張壓: <strong>${diastolic}</strong> mmHg / 心律: <strong>${heartrate}</strong> 次/分</p>
+                <p class="bp-category">${category} (${heartrateStatus})</p>
+                <p class="bp-reminder">${reminder}</p>
             </div>
         `;
         
@@ -156,9 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // 顯示上次測量的結果
             resultDiv.innerHTML = `
                 <div class="result-content ${bpData.categoryClass}">
-                    <p class="bmi-result">收縮壓: <strong>${bpData.systolic}</strong> mmHg / 舒張壓: <strong>${bpData.diastolic}</strong> mmHg${bpData.heartrate ? ` / 心律: <strong>${bpData.heartrate}</strong> 次/分` : ''}</p>
-                    <p class="bmi-category">${bpData.category}${bpData.heartrateStatus ? ` (${bpData.heartrateStatus})` : ''}</p>
-                    <p class="bmi-reminder">${bpData.reminder}</p>
+                    <p class="bp-result">收縮壓: <strong>${bpData.systolic}</strong> mmHg / 舒張壓: <strong>${bpData.diastolic}</strong> mmHg${bpData.heartrate ? ` / 心律: <strong>${bpData.heartrate}</strong> 次/分` : ''}</p>
+                    <p class="bp-category">${bpData.category}${bpData.heartrateStatus ? ` (${bpData.heartrateStatus})` : ''}</p>
+                    <p class="bp-reminder">${bpData.reminder}</p>
                     <p class="timestamp">上次測量時間: ${new Date(bpData.timestamp).toLocaleString()}</p>
                 </div>
             `;

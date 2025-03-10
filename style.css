@@ -189,7 +189,7 @@ input[type="number"] {
     -webkit-appearance: none; /* 移除iOS預設樣式 */
 }
 
-.calculate-btn, .monitor-btn {
+.monitor-btn {
     width: 100%;
     padding: 12px 24px;
     background-color: #3498db;
@@ -203,7 +203,7 @@ input[type="number"] {
     margin-top: 8px;
 }
 
-.calculate-btn:hover, .monitor-btn:hover {
+.monitor-btn:hover {
     background-color: #2980b9;
 }
 
@@ -220,46 +220,44 @@ input[type="number"] {
     margin-bottom: 20px;
 }
 
-.result-content.underweight {
+.result-content.bp-low {
     background-color: #AED6F1;
     border: 2px solid #3498db;
 }
 
-.result-content.normal {
+.result-content.bp-normal {
     background-color: #A9DFBF;
     border: 2px solid #27ae60;
 }
 
-.result-content.overweight {
+.result-content.bp-elevated {
     background-color: #FAD7A0;
     border: 2px solid #f39c12;
 }
 
-.result-content.obese-mild, .result-content.obese-moderate {
+.result-content.bp-high-1 {
     background-color: #F5B041;
     border: 2px solid #e67e22;
 }
 
-.result-content.obese-severe {
+.result-content.bp-high-2 {
+    background-color: #F8C471;
+    border: 2px solid #e67e22;
+}
+
+.result-content.bp-high-3 {
     background-color: #F1948A;
     border: 2px solid #e74c3c;
 }
 
-.bmi-result, .bp-result {
+.bp-result {
     font-size: 20px;
     margin-bottom: 10px;
 }
 
-.bmi-category, .bp-category {
+.bp-category {
     font-size: 18px;
     font-weight: 700;
-}
-
-.bmi-reminder {
-    font-size: 16px;
-    margin-top: 10px;
-    font-style: italic;
-    color: #555;
 }
 
 .error {
@@ -301,22 +299,22 @@ input[type="number"] {
 }
 
 /* 血壓分類顏色 */
-.underweight { background-color: #AED6F1; } /* 低血壓 - 淺藍色 */
-.normal { background-color: #A9DFBF; } /* 正常 - 淺綠色 */
-.overweight { background-color: #FAD7A0; } /* 偏高 - 淺黃色 */
-.obese-mild { background-color: #F5B041; } /* 高血壓前期 - 橙色 */
-.obese-moderate { background-color: #F8C471; } /* 高血壓一期 - 深橙色 */
-.obese-severe { background-color: #F1948A; } /* 高血壓危險 - 紅色 */
+.bp-low { background-color: #AED6F1; } /* 低血壓 - 淺藍色 */
+.bp-normal { background-color: #A9DFBF; } /* 正常 - 淺綠色 */
+.bp-elevated { background-color: #FAD7A0; } /* 高血壓前期 - 淺黃色 */
+.bp-high-1 { background-color: #F5B041; } /* 高血壓一期 - 橙色 */
+.bp-high-2 { background-color: #F8C471; } /* 高血壓二期 - 深橙色 */
+.bp-high-3 { background-color: #F1948A; } /* 高血壓三期 - 紅色 */
 
 /* 血壓參考樣式 */
-.waist-reference {
+.bp-reference {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     margin-bottom: 25px;
 }
 
-.waist-item {
+.bp-item {
     flex: 1;
     min-width: 120px;
     padding: 12px;
@@ -326,73 +324,24 @@ input[type="number"] {
     border: 1px solid #3498db;
 }
 
-.gender {
+.bp-label {
     font-weight: 700;
     margin-bottom: 5px;
     color: #2c3e50;
 }
 
-.waist-value {
+.bp-value {
     font-size: 14px;
     color: #34495e;
 }
 
-.male {
-    background-color: #D6EAF8;
-}
-
-.female {
-    background-color: #D6EAF8;
-}
-
 /* 歷史記錄樣式 */
-.weight-history {
+.bp-history {
     background-color: white;
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 30px;
-}
-
-.history-container {
-    border: 1px solid #e5e5e5;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.history-header {
-    display: flex;
-    background-color: #3498db;
-    color: white;
-    font-weight: 500;
-    border-bottom: 1px solid #ddd;
-}
-
-.history-row {
-    display: flex;
-    border-bottom: 1px solid #eee;
-}
-
-.history-row:last-child {
-    border-bottom: none;
-}
-
-.history-row:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.history-cell {
-    flex: 1;
-    padding: 10px;
-    text-align: center;
-    font-size: 14px;
-}
-
-.timestamp {
-    font-size: 12px;
-    color: #777;
-    text-align: right;
-    margin-top: 10px;
 }
 
 /* 頁腳樣式 */
@@ -457,11 +406,9 @@ input[type="number"] {
         margin-top: 10px;
     }
 
-    .reference-item, .waist-item {
+    .reference-item {
         min-width: 100%;
     }
 
-    .history-header, .history-row {
-        font-size: 12px;
-    }
+    /* 移除未使用的 .waist-item 選擇器 */
 }
