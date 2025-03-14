@@ -12,6 +12,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // 檢查用戶登錄狀態並載入歷史記錄
     checkLoginAndLoadHistory();
     
+    // 計算血壓類別的通用函數
+    function calculateBloodPressureCategory(systolic, diastolic) {
+        let category = '';
+        let categoryClass = '';
+        
+        if (systolic < 90 || diastolic < 60) {
+            category = '低血壓';
+            categoryClass = 'bp-low';
+        } else if (systolic >= 90 && systolic <= 120 && diastolic >= 60 && diastolic <= 80) {
+            category = '正常血壓';
+            categoryClass = 'bp-normal';
+        } else if ((systolic > 120 && systolic < 130) || diastolic == 80) {
+            category = '血壓偏高';
+            categoryClass = 'bp-elevated';
+        } else if ((systolic >= 130 && systolic <= 140) || (diastolic > 80 && diastolic <= 90)) {
+            category = '高血壓 (前期)';
+            categoryClass = 'bp-high-1';
+        } else if (systolic > 140 || diastolic > 90) {
+            category = '高血壓 (危險)';
+            categoryClass = 'bp-high-3';
+        }
+        
+        return { category, categoryClass };
+    }
+    
     // 表單提交處理
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -33,25 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // 確定血壓類別
-        let category = '';
-        let categoryClass = '';
-        
-        if (systolic < 90 || diastolic < 60) {
-            category = '低血壓';
-            categoryClass = 'bp-low';
-        } else if (systolic >= 90 && systolic <= 120 && diastolic >= 60 && diastolic <= 80) {
-            category = '正常血壓';
-            categoryClass = 'bp-normal';
-        } else if ((systolic > 120 && systolic < 130) || diastolic == 80) {
-            category = '血壓偏高';
-            categoryClass = 'bp-elevated';
-        } else if ((systolic >= 130 && systolic <= 140) || (diastolic > 80 && diastolic <= 90)) {
-            category = '高血壓 (前期)';
-            categoryClass = 'bp-high-1';
-        } else if (systolic > 140 || diastolic > 90) {
-            category = '高血壓 (危險)';
-            categoryClass = 'bp-high-3';
-        }
+        const bpResult = calculateBloodPressureCategory(systolic, diastolic);
+        const category = bpResult.category;
+        const categoryClass = bpResult.categoryClass;
         
         // 確定心律狀況
         let heartrateStatus = '';
@@ -238,9 +247,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     const systolic = record[1];
                     const diastolic = record[2];
                     const heartrate = record[3] || '-'; // 兼容舊數據
-                    const category = record[4];
                     
-                    historyHTML += '<div class="history-row">';
+                    // 使用通用函數計算血壓類別
+                    const bpResult = calculateBloodPressureCategory(systolic, diastolic);
+                    const category = bpResult.category;
+                    const categoryClass = bpResult.categoryClass;
+                    
+                    historyHTML += `<div class="history-row ${categoryClass}">`;
                     historyHTML += `<div class="history-cell">${date}</div>`;
                     historyHTML += `<div class="history-cell">${systolic}</div>`;
                     historyHTML += `<div class="history-cell">${diastolic}</div>`;
