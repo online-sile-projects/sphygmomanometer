@@ -1,0 +1,3 @@
+User-agent: *
+Sitemap: https://phygmomanometer.com/articles/sitemap.xml
+Sitemap: https://phygmomanometer.com/sitemap.xml
