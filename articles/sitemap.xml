@@ -2,13 +2,19 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://phygmomanometer.com/articles/index.html</loc>
-        <lastmod>2025-03-29</lastmod>
+        <lastmod>2025-03-30</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
+        <loc>https://phygmomanometer.com/articles/2025-03-30-01-39-37-健康資訊快遞：南投衛生局、新聞報導及健康觀點.html</loc>
+        <lastmod>2025-03-30-01-39-37</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
         <loc>https://phygmomanometer.com/articles/2025-03-29-01-24-53-近期健康新聞重點摘要：高血壓、三高控制與乾眼症預防.html</loc>
-        <lastmod>2025-03-29-01-24-53</lastmod>
+        <lastmod>2025-03-29-01-24</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
