@@ -2,13 +2,19 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://phygmomanometer.com/articles/index.html</loc>
-        <lastmod>2025-04-03</lastmod>
+        <lastmod>2025-04-04</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
+        <loc>https://phygmomanometer.com/articles/2025-04-04-01-29-58-近期高血壓相關新聞重點整理-(2025年4月3日).html</loc>
+        <lastmod>2025-04-04-01-29-58</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
         <loc>https://phygmomanometer.com/articles/2025-04-03-01-26-06-近期健康新聞彙整：關注血壓控制與健康生活方式.html</loc>
-        <lastmod>2025-04-03-01-26-06</lastmod>
+        <lastmod>2025-04-03-01-26</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
