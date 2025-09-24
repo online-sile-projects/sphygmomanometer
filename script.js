@@ -278,8 +278,237 @@ document.addEventListener('DOMContentLoaded', function() {
         const userProfile = getCurrentUserProfile();
         if (userProfile) {
             loadBloodPressureHistory();
+            updateBloodPressureChart(); // 更新圖表
         } else {
             historyListDiv.innerHTML = '<p>請先登入以查看您的血壓記錄</p>';
+            showNoDataMessage(); // 顯示無數據訊息
         }
     });
+
+    // 圖表相關變數
+    let bpChart = null;
+    let chartData = [];
+    let currentTimePeriod = 'morning';
+
+    // 初始化圖表
+    function initializeChart() {
+        const ctx = document.getElementById('bp-chart').getContext('2d');
+        
+        bpChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '收縮壓',
+                    data: [],
+                    borderColor: 'rgb(231, 76, 60)',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.4,
+                    fill: false
+                }, {
+                    label: '舒張壓',
+                    data: [],
+                    borderColor: 'rgb(52, 152, 219)',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '血壓趨勢圖表'
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '測量時間'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '血壓 (mmHg)'
+                        },
+                        min: 40,
+                        max: 200
+                    }
+                }
+            }
+        });
+    }
+
+    // 按時間段分類數據
+    function categorizeDataByTimePeriod(data, period) {
+        if (period === 'all') {
+            return data;
+        }
+
+        return data.filter(record => {
+            const date = new Date(record[0]);
+            const hour = date.getHours();
+            
+            switch (period) {
+                case 'morning':
+                    return hour >= 6 && hour < 12;
+                case 'afternoon':
+                    return hour >= 12 && hour < 18;
+                case 'evening':
+                    return hour >= 18 && hour < 24;
+                case 'night':
+                    return hour >= 0 && hour < 6;
+                default:
+                    return true;
+            }
+        });
+    }
+
+    // 更新血壓圖表
+    function updateBloodPressureChart(period = currentTimePeriod) {
+        const userProfile = getCurrentUserProfile();
+        if (!userProfile) {
+            showNoDataMessage();
+            return;
+        }
+
+        // 使用現有的圖表數據
+        if (!chartData || chartData.length === 0) {
+            fetchChartData().then(data => {
+                chartData = data;
+                renderChart(period);
+            });
+        } else {
+            renderChart(period);
+        }
+    }
+
+    // 獲取圖表數據
+    async function fetchChartData() {
+        const userProfile = getCurrentUserProfile();
+        if (!userProfile) {
+            return [];
+        }
+
+        try {
+            const response = await fetch(`${GAS_CONFIG.webAppUrl}?action=getBloodPressureHistory&userId=${userProfile.userId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                return result.data;
+            }
+        } catch (error) {
+            console.error('Error fetching chart data:', error);
+        }
+        
+        return [];
+    }
+
+    // 渲染圖表
+    function renderChart(period) {
+        const filteredData = categorizeDataByTimePeriod(chartData, period);
+        
+        if (filteredData.length === 0) {
+            showNoDataMessage();
+            return;
+        }
+
+        hideNoDataMessage();
+
+        // 準備圖表數據（最多顯示最近30筆記錄）
+        const recentData = filteredData.slice(0, 30).reverse();
+        const labels = recentData.map(record => {
+            const date = new Date(record[0]);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString('zh-TW', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        });
+        
+        const systolicData = recentData.map(record => record[1]);
+        const diastolicData = recentData.map(record => record[2]);
+
+        // 更新圖表
+        if (bpChart) {
+            bpChart.data.labels = labels;
+            bpChart.data.datasets[0].data = systolicData;
+            bpChart.data.datasets[1].data = diastolicData;
+            bpChart.update();
+        }
+    }
+
+    // 顯示無數據訊息
+    function showNoDataMessage() {
+        document.getElementById('chart-no-data').style.display = 'block';
+        document.getElementById('bp-chart').style.display = 'none';
+    }
+
+    // 隱藏無數據訊息
+    function hideNoDataMessage() {
+        document.getElementById('chart-no-data').style.display = 'none';
+        document.getElementById('bp-chart').style.display = 'block';
+    }
+
+    // 設置時間段篩選按鈕事件
+    function setupTimePeriodFilters() {
+        const filterButtons = document.querySelectorAll('.time-filter');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除所有按鈕的 active 類別
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // 為當前按鈕添加 active 類別
+                this.classList.add('active');
+                
+                // 更新當前時間段
+                currentTimePeriod = this.getAttribute('data-period');
+                
+                // 更新圖表
+                renderChart(currentTimePeriod);
+            });
+        });
+    }
+
+    // 修改原有的載入歷史記錄函數，同時更新圖表
+    const originalLoadBloodPressureHistory = window.loadBloodPressureHistory || loadBloodPressureHistory;
+    
+    // 重新定義載入歷史記錄函數
+    async function loadBloodPressureHistoryWithChart() {
+        await loadBloodPressureHistory();
+        
+        // 載入歷史記錄後，更新圖表數據
+        chartData = await fetchChartData();
+        updateBloodPressureChart();
+    }
+
+    // 替換所有對 loadBloodPressureHistory 的調用
+    window.loadBloodPressureHistory = loadBloodPressureHistoryWithChart;
+
+    // 頁面載入完成後初始化圖表
+    setTimeout(() => {
+        initializeChart();
+        setupTimePeriodFilters();
+        
+        // 如果用戶已登錄，載入圖表數據
+        const userProfile = getCurrentUserProfile();
+        if (userProfile) {
+            updateBloodPressureChart();
+        } else {
+            showNoDataMessage();
+        }
+    }, 500); // 延遲確保其他腳本都已載入
 });

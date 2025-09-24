@@ -141,6 +141,23 @@
             <div id="history-list"></div>
         </section>
 
+        <section class="bp-chart-section" id="bp-chart-section">
+            <h2>血壓趨勢圖表</h2>
+            <div class="time-period-filters">
+                <button class="time-filter active" data-period="morning">上午 (6-12點)</button>
+                <button class="time-filter" data-period="afternoon">下午 (12-18點)</button>
+                <button class="time-filter" data-period="evening">晚上 (18-24點)</button>
+                <button class="time-filter" data-period="night">深夜 (0-6點)</button>
+                <button class="time-filter" data-period="all">全部時段</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="bp-chart" width="400" height="200"></canvas>
+            </div>
+            <div id="chart-no-data" class="no-data-message" style="display: none;">
+                <p>目前沒有血壓記錄，請先測量並記錄血壓</p>
+            </div>
+        </section>
+
         <!-- SEO-friendly introductory content -->
         <section class="intro-section">
             <h2>什麼是血壓？</h2>
@@ -158,6 +175,8 @@
             </div>
         </footer>
     </div>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="config.js"></script>
     <script src="line-auth.js"></script>
     <script src="script.js"></script>
