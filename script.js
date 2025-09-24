@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: {
                     title: {
                         display: true,
-                        text: '血壓趨勢圖表'
+                        text: '血壓每日平均趨勢圖表'
                     },
                     legend: {
                         position: 'top'
@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         display: true,
                         title: {
                             display: true,
-                            text: '測量時間'
+                            text: '測量日期'
                         }
                     },
                     'bp-axis': {
@@ -561,19 +561,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
         hideNoDataMessage();
 
-        // 準備圖表數據（最多顯示最近30筆記錄）
-        const recentData = filteredData.slice(0, 30).reverse();
-        const labels = recentData.map(record => {
-            const date = new Date(record[0]);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString('zh-TW', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+        // 按日期分組並計算平均值
+        const groupedByDate = groupDataByDate(filteredData);
+        
+        // 準備圖表數據（最多顯示最近30天的記錄）
+        const recentData = Object.entries(groupedByDate)
+            .sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA)) // 按日期排序
+            .slice(0, 30)
+            .reverse(); // 最舊的在前面，最新的在後面
+        
+        const labels = recentData.map(([date]) => {
+            return new Date(date).toLocaleDateString('zh-TW', { 
+                month: 'short', 
+                day: 'numeric' 
             });
         });
         
-        const systolicData = recentData.map(record => record[1]);
-        const diastolicData = recentData.map(record => record[2]);
-        const heartrateData = recentData.map(record => record[3] || null); // 心律數據，兼容舊數據
+        const systolicData = recentData.map(([_, data]) => Math.round(data.avgSystolic));
+        const diastolicData = recentData.map(([_, data]) => Math.round(data.avgDiastolic));
+        const heartrateData = recentData.map(([_, data]) => 
+            data.avgHeartrate ? Math.round(data.avgHeartrate) : null
+        );
 
         // 更新圖表
         if (bpChart) {
@@ -583,6 +591,47 @@ document.addEventListener('DOMContentLoaded', function() {
             bpChart.data.datasets[2].data = heartrateData;
             bpChart.update();
         }
+    }
+
+    // 按日期分組數據並計算平均值
+    function groupDataByDate(data) {
+        const grouped = {};
+        
+        data.forEach(record => {
+            // 取得日期字符串 (YYYY-MM-DD)
+            const date = new Date(record[0]).toDateString();
+            
+            if (!grouped[date]) {
+                grouped[date] = {
+                    systolic: [],
+                    diastolic: [],
+                    heartrate: []
+                };
+            }
+            
+            grouped[date].systolic.push(parseFloat(record[1]));
+            grouped[date].diastolic.push(parseFloat(record[2]));
+            if (record[3] && !isNaN(parseFloat(record[3]))) {
+                grouped[date].heartrate.push(parseFloat(record[3]));
+            }
+        });
+        
+        // 計算每日平均值
+        const averages = {};
+        Object.keys(grouped).forEach(date => {
+            const dayData = grouped[date];
+            
+            averages[date] = {
+                avgSystolic: dayData.systolic.reduce((sum, val) => sum + val, 0) / dayData.systolic.length,
+                avgDiastolic: dayData.diastolic.reduce((sum, val) => sum + val, 0) / dayData.diastolic.length,
+                avgHeartrate: dayData.heartrate.length > 0 
+                    ? dayData.heartrate.reduce((sum, val) => sum + val, 0) / dayData.heartrate.length 
+                    : null,
+                count: dayData.systolic.length // 當天測量次數
+            };
+        });
+        
+        return averages;
     }
 
     // 顯示無數據訊息

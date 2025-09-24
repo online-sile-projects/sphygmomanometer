@@ -530,6 +530,18 @@ input[type="number"] {
     border: 1px dashed #bdc3c7;
 }
 
+/* 圖表說明 */
+.chart-info {
+    text-align: center;
+    margin-top: 15px;
+    color: #7f8c8d;
+}
+
+.chart-info p {
+    margin: 0;
+    font-size: 13px;
+}
+
 /* 分頁控制樣式 */
 .pagination-controls {
     display: flex;
