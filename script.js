@@ -411,14 +411,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: 'rgb(231, 76, 60)',
                     backgroundColor: 'rgba(231, 76, 60, 0.1)',
                     tension: 0.4,
-                    fill: false
+                    fill: false,
+                    yAxisID: 'bp-axis'
                 }, {
                     label: '舒張壓',
                     data: [],
                     borderColor: 'rgb(52, 152, 219)',
                     backgroundColor: 'rgba(52, 152, 219, 0.1)',
                     tension: 0.4,
-                    fill: false
+                    fill: false,
+                    yAxisID: 'bp-axis'
+                }, {
+                    label: '心律',
+                    data: [],
+                    borderColor: 'rgb(46, 204, 113)',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    yAxisID: 'hr-axis'
                 }]
             },
             options: {
@@ -445,14 +455,30 @@ document.addEventListener('DOMContentLoaded', function() {
                             text: '測量時間'
                         }
                     },
-                    y: {
+                    'bp-axis': {
+                        type: 'linear',
                         display: true,
+                        position: 'left',
                         title: {
                             display: true,
                             text: '血壓 (mmHg)'
                         },
                         min: 40,
                         max: 200
+                    },
+                    'hr-axis': {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: '心律 (次/分)'
+                        },
+                        min: 40,
+                        max: 120,
+                        grid: {
+                            drawOnChartArea: false,
+                        },
                     }
                 }
             }
@@ -547,12 +573,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const systolicData = recentData.map(record => record[1]);
         const diastolicData = recentData.map(record => record[2]);
+        const heartrateData = recentData.map(record => record[3] || null); // 心律數據，兼容舊數據
 
         // 更新圖表
         if (bpChart) {
             bpChart.data.labels = labels;
             bpChart.data.datasets[0].data = systolicData;
             bpChart.data.datasets[1].data = diastolicData;
+            bpChart.data.datasets[2].data = heartrateData;
             bpChart.update();
         }
     }
