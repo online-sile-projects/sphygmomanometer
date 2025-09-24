@@ -19,6 +19,9 @@ function doGet(e) {
     } else if (action === 'saveBloodPressure') {
       Logger.log('Executing saveBloodPressure action via GET');
       return saveBloodPressureRecordFromGet(e);
+    } else if (action === 'deleteBloodPressureRecord') {
+      Logger.log('Executing deleteBloodPressureRecord action');
+      return deleteBloodPressureRecord(e);
     } else {
       Logger.log('Invalid action requested: ' + action);
       return ContentService.createTextOutput(JSON.stringify({
@@ -272,4 +275,96 @@ function testDoGetSaveBloodPressureRecord() {
   }
   
   return resultJson.success;
+}
+
+// Delete blood pressure record
+function deleteBloodPressureRecord(e) {
+  const userId = e.parameter.userId;
+  const date = e.parameter.date;
+  const systolic = e.parameter.systolic;
+  const diastolic = e.parameter.diastolic;
+  const heartrate = e.parameter.heartrate || '';
+  
+  Logger.log('deleteBloodPressureRecord called with userId: ' + userId + 
+             ', date: ' + date + 
+             ', systolic: ' + systolic + 
+             ', diastolic: ' + diastolic + 
+             ', heartrate: ' + heartrate);
+  
+  if (!userId || !date || !systolic || !diastolic) {
+    Logger.log('Missing required parameters in deleteBloodPressureRecord');
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: 'Missing required parameters'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let userSheet = ss.getSheetByName(userId);
+    
+    if (!userSheet) {
+      Logger.log('User sheet not found for userId: ' + userId);
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'User sheet not found'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Get all data from the sheet
+    const data = userSheet.getDataRange().getValues();
+    
+    if (data.length <= 1) {
+      Logger.log('No records found to delete');
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'No records found'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Find the row to delete (skip header row)
+    let rowToDelete = -1;
+    const targetDate = new Date(date);
+    
+    for (let i = 1; i < data.length; i++) {
+      const rowDate = new Date(data[i][0]);
+      const rowSystolic = data[i][1];
+      const rowDiastolic = data[i][2];
+      const rowHeartrate = data[i][3] || '';
+      
+      // Compare date and blood pressure values
+      if (Math.abs(targetDate.getTime() - rowDate.getTime()) < 1000 && // within 1 second
+          rowSystolic == systolic && 
+          rowDiastolic == diastolic && 
+          rowHeartrate == heartrate) {
+        rowToDelete = i + 1; // Google Sheets is 1-indexed
+        break;
+      }
+    }
+    
+    if (rowToDelete === -1) {
+      Logger.log('Record not found to delete');
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: 'Record not found'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Delete the row
+    userSheet.deleteRow(rowToDelete);
+    
+    Logger.log('Successfully deleted record from row: ' + rowToDelete);
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      message: 'Record deleted successfully'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('Error in deleteBloodPressureRecord: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }

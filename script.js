@@ -217,8 +217,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // 分頁變數
+    let currentPage = 1;
+    let recordsPerPage = 5;
+    let totalRecords = [];
+
     // 載入血壓歷史記錄
-    async function loadBloodPressureHistory() {
+    async function loadBloodPressureHistory(page = 1) {
         const userProfile = getCurrentUserProfile();
         if (!userProfile) {
             historyListDiv.innerHTML = '<p>請先登入以查看您的血壓記錄</p>';
@@ -230,40 +235,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             
             if (result.success) {
-                let historyHTML = '<div class="history-container">';
-                historyHTML += '<div class="history-header">';
-                historyHTML += '<div class="history-cell">日期</div>';
-                historyHTML += '<div class="history-cell">收縮壓</div>';
-                historyHTML += '<div class="history-cell">舒張壓</div>';
-                historyHTML += '<div class="history-cell">心律</div>';
-                historyHTML += '<div class="history-cell">類別</div>';
-                historyHTML += '</div>';
-                
-                // 最多顯示10筆記錄
-                const recentHistory = result.data.slice(0, 10);
-                
-                recentHistory.forEach(record => {
-                    const date = new Date(record[0]).toLocaleDateString();
-                    const systolic = record[1];
-                    const diastolic = record[2];
-                    const heartrate = record[3] || '-'; // 兼容舊數據
-                    
-                    // 使用通用函數計算血壓類別
-                    const bpResult = calculateBloodPressureCategory(systolic, diastolic);
-                    const category = bpResult.category;
-                    const categoryClass = bpResult.categoryClass;
-                    
-                    historyHTML += `<div class="history-row ${categoryClass}">`;
-                    historyHTML += `<div class="history-cell">${date}</div>`;
-                    historyHTML += `<div class="history-cell">${systolic}</div>`;
-                    historyHTML += `<div class="history-cell">${diastolic}</div>`;
-                    historyHTML += `<div class="history-cell">${heartrate}</div>`;
-                    historyHTML += `<div class="history-cell">${category}</div>`;
-                    historyHTML += '</div>';
-                });
-                
-                historyHTML += '</div>';
-                historyListDiv.innerHTML = historyHTML;
+                totalRecords = result.data;
+                currentPage = page;
+                displayHistoryPage(currentPage);
             } else {
                 historyListDiv.innerHTML = '<p>無法載入血壓記錄</p>';
             }
@@ -272,6 +246,139 @@ document.addEventListener('DOMContentLoaded', function() {
             historyListDiv.innerHTML = '<p>載入血壓記錄時發生錯誤</p>';
         }
     }
+
+    // 顯示指定頁面的歷史記錄
+    function displayHistoryPage(page) {
+        if (totalRecords.length === 0) {
+            historyListDiv.innerHTML = '<p>暫無血壓記錄</p>';
+            document.getElementById('pagination-controls').style.display = 'none';
+            return;
+        }
+
+        const startIndex = (page - 1) * recordsPerPage;
+        const endIndex = startIndex + recordsPerPage;
+        const pageRecords = totalRecords.slice(startIndex, endIndex);
+
+        let historyHTML = '<div class="history-container">';
+        historyHTML += '<div class="history-header">';
+        historyHTML += '<div class="history-cell">日期時間</div>';
+        historyHTML += '<div class="history-cell">收縮壓</div>';
+        historyHTML += '<div class="history-cell">舒張壓</div>';
+        historyHTML += '<div class="history-cell">心律</div>';
+        historyHTML += '<div class="history-cell">類別</div>';
+        historyHTML += '<div class="history-cell actions">操作</div>';
+        historyHTML += '</div>';
+
+        pageRecords.forEach((record, index) => {
+            const recordDate = new Date(record[0]);
+            const dateTimeString = recordDate.toLocaleDateString('zh-TW', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }) + ' ' + recordDate.toLocaleTimeString('zh-TW', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            const systolic = record[1];
+            const diastolic = record[2];
+            const heartrate = record[3] || '-';
+
+            // 使用通用函數計算血壓類別
+            const bpResult = calculateBloodPressureCategory(systolic, diastolic);
+            const category = bpResult.category;
+            const categoryClass = bpResult.categoryClass;
+            
+            const recordIndex = startIndex + index;
+            
+            historyHTML += `<div class="history-row ${categoryClass}">`;
+            historyHTML += `<div class="history-cell">${dateTimeString}</div>`;
+            historyHTML += `<div class="history-cell">${systolic}</div>`;
+            historyHTML += `<div class="history-cell">${diastolic}</div>`;
+            historyHTML += `<div class="history-cell">${heartrate}</div>`;
+            historyHTML += `<div class="history-cell">${category}</div>`;
+            historyHTML += `<div class="history-cell actions">
+                <button class="delete-btn" onclick="deleteRecord(${recordIndex})" title="刪除記錄">刪除</button>
+            </div>`;
+            historyHTML += '</div>';
+        });
+
+        historyHTML += '</div>';
+        historyListDiv.innerHTML = historyHTML;
+
+        // 顯示分頁控制
+        updatePaginationControls();
+    }
+
+    // 更新分頁控制
+    function updatePaginationControls() {
+        const totalPages = Math.ceil(totalRecords.length / recordsPerPage);
+        const paginationControls = document.getElementById('pagination-controls');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        const pageInfo = document.getElementById('page-info');
+
+        if (totalPages > 1) {
+            paginationControls.style.display = 'flex';
+            
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            
+            pageInfo.textContent = `第 ${currentPage} 頁，共 ${totalPages} 頁`;
+        } else {
+            paginationControls.style.display = 'none';
+        }
+    }
+
+    // 刪除記錄
+    async function deleteRecord(recordIndex) {
+        if (!confirm('確定要刪除這筆記錄嗎？')) {
+            return;
+        }
+
+        const userProfile = getCurrentUserProfile();
+        if (!userProfile) {
+            alert('請先登入');
+            return;
+        }
+
+        const record = totalRecords[recordIndex];
+        const recordDate = new Date(record[0]).toISOString();
+
+        try {
+            const response = await fetch(`${GAS_CONFIG.webAppUrl}?action=deleteBloodPressureRecord&userId=${encodeURIComponent(userProfile.userId)}&date=${encodeURIComponent(recordDate)}&systolic=${encodeURIComponent(record[1])}&diastolic=${encodeURIComponent(record[2])}&heartrate=${encodeURIComponent(record[3] || '')}`, {
+                method: 'GET',
+                mode: 'cors'
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                // 重新載入記錄
+                await loadBloodPressureHistory(currentPage);
+                
+                // 如果當前頁面沒有記錄了，回到前一頁
+                const totalPages = Math.ceil(totalRecords.length / recordsPerPage);
+                if (currentPage > totalPages && totalPages > 0) {
+                    await loadBloodPressureHistory(totalPages);
+                }
+                
+                // 更新圖表
+                if (typeof updateChart === 'function') {
+                    updateChart();
+                }
+            } else {
+                alert('刪除記錄失敗：' + (result.error || '未知錯誤'));
+            }
+        } catch (error) {
+            console.error('Error deleting record:', error);
+            alert('刪除記錄時發生錯誤');
+        }
+    }
+
+    // 將刪除函數設為全域函數
+    window.deleteRecord = deleteRecord;
     
     // 監聽 Line 登錄狀態變化
     document.addEventListener('lineLoginStatusChanged', function() {
@@ -511,4 +618,18 @@ document.addEventListener('DOMContentLoaded', function() {
             showNoDataMessage();
         }
     }, 500); // 延遲確保其他腳本都已載入
+
+    // 分頁按鈕事件監聽器
+    document.getElementById('prev-page').addEventListener('click', function() {
+        if (currentPage > 1) {
+            loadBloodPressureHistory(currentPage - 1);
+        }
+    });
+
+    document.getElementById('next-page').addEventListener('click', function() {
+        const totalPages = Math.ceil(totalRecords.length / recordsPerPage);
+        if (currentPage < totalPages) {
+            loadBloodPressureHistory(currentPage + 1);
+        }
+    });
 });
