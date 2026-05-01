@@ -1,16 +1,16 @@
-const CACHE_NAME = 'blood-pressure-cache-v1';
+const CACHE_NAME = 'blood-pressure-cache-v2';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/script.js',
-  '/line-auth.js',
-  '/config.js',
-  '/images/hypertension-favicon-16x16.png',
-  '/images/hypertension-favicon-32x32.png',
-  '/images/hypertension-apple-touch-icon.png',
-  '/images/hypertension-favicon-192x192.png',
-  '/images/hypertension-favicon-512x512.png'
+  './',
+  './index.html',
+  './style.css',
+  './script.js',
+  './line-auth.js',
+  './config.js',
+  './images/hypertension-favicon-16x16.png',
+  './images/hypertension-favicon-32x32.png',
+  './images/hypertension-apple-touch-icon.png',
+  './images/hypertension-favicon-192x192.png',
+  './images/hypertension-favicon-512x512.png'
 ];
 
 self.addEventListener('install', event => {
