@@ -2,6 +2,7 @@
 const LINE_CONFIG = {
     liffId: '2007007936-YegvQE39',  // Replace with your LIFF ID from Line Developer Console
     channelId: '2007007936', // Replace with your Line Channel ID
+    redirectUri: 'https://online-sile-projects.github.io/sphygmomanometer/'
 };
 
 // Google Apps Script configuration

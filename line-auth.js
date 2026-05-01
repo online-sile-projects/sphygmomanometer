@@ -13,6 +13,10 @@ const STORAGE_KEY = {
     EXPIRES_AT: 'line_token_expires_at'
 };
 
+function getLineRedirectUri() {
+    return LINE_CONFIG.redirectUri || window.location.href;
+}
+
 // Initialize Line SDK
 document.addEventListener('DOMContentLoaded', () => {
     initializeLineLogin();
@@ -69,7 +73,7 @@ function setupLoginButton() {
         } else {
             // Login
             try {
-                await liff.login();
+                await liff.login({ redirectUri: getLineRedirectUri() });
                 // 登入成功後，獲取資料並觸發事件
                 await fetchUserProfile();
                 saveLoginState();
